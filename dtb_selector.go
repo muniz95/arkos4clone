@@ -212,65 +212,86 @@ var Consoles = []ConsoleConfig{
 	},
 	//==================  Clone R36s  ===================================
 	{
-		RealName: "clone type1 amp",
+		RealName: "clone type1 panel1 amp",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 1 With Amplifier"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 1 With Amplifier"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type1",
+		RealName: "clone type1 panel1",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Without Amplifier"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 1 Without Amplifier"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type1 invert",
+		RealName: "clone type1 panel1 invert",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Without Amplifier And Invert Right Joystick"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 1 Without Amplifier And Invert Right Joystick"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type2",
+		RealName: "clone type1 panel2",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 2 Without Amplifier"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 2"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type2 amp",
+		RealName: "clone type1 panel3",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 2 With Amplifier"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 3"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type3 panel1",
+		RealName: "clone type1 panel4",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 3 Panel 1"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 4"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type3 panel2",
+		RealName: "clone type1 panel5",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 3 Panel 2[thanks Flecha]"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 5"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type3 panel3",
+		RealName: "clone type1 panel5 invert",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 3 Panel 3[The previous version was called Clone Type4]"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 5 Invert Right Joystick"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
 	{
-		RealName: "clone type5",
+		RealName: "clone type1 panel6",
 		BrandEntries: []BrandEntry{
-			{Brand: "Clone R36s", DisplayName: "Clone Type 5"},
+			{Brand: "Clone R36s", DisplayName: "Clone Type 1 Panel 6"},
+		},
+		ExtraSources: []string{"logo/480P/"},
+	},
+	{
+		RealName: "clone type2 panel1 amp",
+		BrandEntries: []BrandEntry{
+			{Brand: "Clone R36s", DisplayName: "Clone Type 2 Panel 1 With Amplifier"},
+		},
+		ExtraSources: []string{"logo/480P/"},
+	},
+	{
+		RealName: "clone type2 panel1",
+		BrandEntries: []BrandEntry{
+			{Brand: "Clone R36s", DisplayName: "Clone Type 2 Panel 1 Without Amplifier"},
+		},
+		ExtraSources: []string{"logo/480P/"},
+	},
+	{
+		RealName: "clone type2 panel2",
+		BrandEntries: []BrandEntry{
+			{Brand: "Clone R36s", DisplayName: "Clone Type 2 Panel 2"},
 		},
 		ExtraSources: []string{"logo/480P/"},
 	},
@@ -1460,12 +1481,12 @@ func buildBrandOptions(brand string) []consoleOption {
 func pickConsoleOption(lang *Language, options []consoleOption, showBrand bool) (*consoleOption, error) {
 	for i, opt := range options {
 		if showBrand {
-			fmt.Printf("  %d. %s%s\n", i+1, colorWrap("["+opt.brand+"] ", ansiBlue), opt.displayName)
+			fmt.Printf("  %2d. %s%s\n", i+1, colorWrap("["+opt.brand+"] ", ansiBlue), opt.displayName)
 		} else {
-			fmt.Printf("  %d. %s\n", i+1, opt.displayName)
+			fmt.Printf("  %2d. %s\n", i+1, opt.displayName)
 		}
 	}
-	fmt.Printf("  %d. %s\n", 0, lang.Common.Back)
+	fmt.Printf("  %2d. %s\n", 0, lang.Common.Back)
 
 	for {
 		choice, err := readIntChoice(lang, lang.Common.SelectNumber)
