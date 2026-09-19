@@ -11,3 +11,4 @@ bin/pm_libs/*
 PortMaster/
 sh/firstboot.sh
 /*.bak
+.vscode/
