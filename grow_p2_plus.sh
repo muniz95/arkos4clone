@@ -34,6 +34,33 @@ settle() {
   else
     sleep 1
   fi
+  # 在没有 udev 守护进程的环境（如 Docker 容器，/dev 是独立 tmpfs）中，
+  # 内核已在 sysfs 创建分区但不会自动在 /dev 生成对应设备节点，
+  # 需要从 sysfs 手动 mknod 兜底
+  if [[ -n "${LOOP:-}" ]]; then
+    local loop_name sys_dir part dev_t major minor
+    loop_name="$(basename "$LOOP")"
+    sys_dir="/sys/class/block/${loop_name}"
+    if [[ -d "$sys_dir" ]]; then
+      for part in "$sys_dir"/"${loop_name}"p*; do
+        [[ -d "$part" ]] || continue
+        local node="/dev/$(basename "$part")"
+        dev_t="$(cat "$part/dev" 2>/dev/null)" || continue
+        major="${dev_t%:*}"; minor="${dev_t#*:}"
+        # 节点可能已存在但指向旧的 major:minor（例如 loop 设备被重新
+        # attach 后内核重新分配了编号），需要比对并在不一致时重建
+        if [[ -b "$node" ]]; then
+          local cur_rdev
+          cur_rdev="$(stat -c '%t:%T' "$node" 2>/dev/null)"
+          if [[ "$cur_rdev" == "$(printf '%x:%x' "$major" "$minor")" ]]; then
+            continue
+          fi
+          sudo rm -f "$node"
+        fi
+        sudo mknod "$node" b "$major" "$minor" 2>/dev/null || true
+      done
+    fi
+  fi
 }
 
 cleanup() {

@@ -51,6 +51,34 @@ is_mounted() {
   mountpoint -q "$1"
 }
 
+ensure_partition_nodes() {
+  # In environments without a live udev daemon (e.g. Docker, where /dev is
+  # a container-local tmpfs), the kernel creates partitions in sysfs but
+  # never mknods them under /dev. Create any missing nodes from sysfs.
+  local loop="$1" loop_name sys_dir part node dev_t major minor
+  loop_name="$(basename "$loop")"
+  sys_dir="/sys/class/block/${loop_name}"
+  [[ -d "$sys_dir" ]] || return 0
+  for part in "$sys_dir"/"${loop_name}"p*; do
+    [[ -d "$part" ]] || continue
+    node="/dev/$(basename "$part")"
+    dev_t="$(cat "$part/dev" 2>/dev/null)" || continue
+    major="${dev_t%:*}"; minor="${dev_t#*:}"
+    # Node may exist but point at a stale major:minor (e.g. the loop
+    # device was re-attached and the kernel reassigned numbers) --
+    # compare and recreate if mismatched.
+    if [[ -b "$node" ]]; then
+      local cur_rdev
+      cur_rdev="$(stat -c '%t:%T' "$node" 2>/dev/null)"
+      if [[ "$cur_rdev" == "$(printf '%x:%x' "$major" "$minor")" ]]; then
+        continue
+      fi
+      rm -f "$node"
+    fi
+    mknod "$node" b "$major" "$minor" 2>/dev/null || true
+  done
+}
+
 mount_if_not() {
   local dev="$1" mnt="$2" fstype="${3:-auto}" opts="${4:-}"
   if is_mounted "$mnt"; then
@@ -71,6 +99,9 @@ do_mount() {
   # sanity
   [[ -f "$img" ]] || { echo "Image not found: $img" >&2; exit 1; }
 
+  # mount points (must exist before we can write the state file into them)
+  mk_mount_dirs
+
   # create loop with partition scan
   local loop
   loop="$(losetup -fP --show "$img")"   # e.g. /dev/loop7
@@ -79,12 +110,10 @@ do_mount() {
 
   # wait for kernel to create loopXp{1,2,3}
   sleep 0.5
+  ensure_partition_nodes "$loop"
 
   # show partitions
   lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT "$loop"
-
-  # mount points
-  mk_mount_dirs
 
   # Try common layout:
   #  p1 = boot (FAT32), p2 = root (ext4), p3 = roms (exFAT)

@@ -8,6 +8,7 @@ update-darkos.tar
 bin/pm_libs/*
 /*.img.xz
 *.img.xz
+/*.img
 PortMaster/
 sh/firstboot.sh
 /*.bak
