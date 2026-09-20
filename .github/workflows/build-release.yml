@@ -1,4 +1,4 @@
-name: ArkOS4Clone的构建和发布
+name: ArkOS4Clone Build and Release
 
 on:
   workflow_dispatch:
@@ -38,16 +38,16 @@ jobs:
           BASE_URL="https://github.com/lcdyk0517/baidupan2release/releases/download/backup-r3xs/ArkOS_R35S-R36S_v2.0_11072025_MultiPanel.img.xz.7z"
           FILENAME=$(basename "$BASE_URL")
 
-          echo "=== 下载分卷 ==="
+          echo "=== Downloading split archive parts ==="
           for i in 001 002; do
             echo "Downloading part $i ..."
             wget --progress=bar:force:noscroll "${BASE_URL}.${i}" && echo "part $i done" || { echo "Failed to download part $i"; exit 1; }
           done
 
-          echo "=== 解压 7z 分卷 ==="
+          echo "=== Extracting 7z split archive ==="
           7z x "${FILENAME}.001" -o. -y
 
-          echo "=== 查找并解压 xz ==="
+          echo "=== Locating and extracting xz ==="
           ls -lh *.7z* *.xz 2>/dev/null || true
           XZ_FILE=$(ls *.xz 2>/dev/null | head -1)
           if [ -z "$XZ_FILE" ]; then
@@ -57,10 +57,10 @@ jobs:
           echo "Extracting $XZ_FILE ..."
           unxz "$XZ_FILE"
 
-          echo "=== 删除中间文件，释放空间 ==="
+          echo "=== Removing intermediate files to free up space ==="
           rm -f *.7z.001 *.7z.002
 
-          echo "=== 确认 img ==="
+          echo "=== Verifying img ==="
           IMG_FILE=$(ls *.img 2>/dev/null | head -1)
           echo "Source image: $IMG_FILE ($(du -h "$IMG_FILE" | cut -f1))"
 
@@ -93,18 +93,18 @@ jobs:
           LIMIT=$((1900 * 1024 * 1024))
 
           if [ "$FILE_SIZE" -gt "$LIMIT" ]; then
-            echo "文件超过1900M，7z分卷压缩..."
+            echo "File exceeds 1900M, compressing into 7z split archive..."
             7z a -v1900m -mx=0 "${XZ_FILE}.7z" "$XZ_FILE"
             FILES=$(ls ${XZ_FILE}.7z.* | tr '\n' ' ')
           else
             FILES="$XZ_FILE"
           fi
 
-          echo "上传文件: $FILES update-arkos.tar firstboot.sh"
+          echo "Uploading files: $FILES update-arkos.tar firstboot.sh"
           gh release create "$BUILD_DATE" \
             $FILES \
             update-arkos.tar \
             firstboot.sh \
             --title "ArkOS4Clone-$BUILD_DATE" \
-            --notes "ArkOS4Clone 构建版本 - $BUILD_DATE" \
+            --notes "ArkOS4Clone build - $BUILD_DATE" \
             --draft=true

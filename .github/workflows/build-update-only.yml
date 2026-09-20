@@ -1,4 +1,4 @@
-name: 构建升级包
+name: Build Update Package
 
 on:
   workflow_dispatch:
@@ -35,11 +35,11 @@ jobs:
         run: |
           BUILD_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
 
-          echo "上传文件: update*.tar firstboot.sh"
+          echo "Uploading files: update*.tar firstboot.sh"
           gh release create "update-${BUILD_DATE}" \
             update-arkos.tar \
             update-darkos.tar \
             firstboot.sh \
             --title "ArkOS4Clone-Update-${BUILD_DATE}" \
-            --notes "ArkOS4Clone OTA 更新包 - $BUILD_DATE" \
+            --notes "ArkOS4Clone OTA update package - $BUILD_DATE" \
             --draft=true

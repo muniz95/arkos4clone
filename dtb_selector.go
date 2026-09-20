@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-// ===================== 配置：别名 & 排除 =====================
+// ===================== Configuration: aliases & exclusions =====================
 type ConsoleConfig struct {
 	RealName     string
 	BrandEntries []BrandEntry
@@ -28,7 +28,7 @@ type BrandEntry struct {
 	DisplayName string
 }
 
-// 控制台配置
+// Console configuration
 var Consoles = []ConsoleConfig{
 	//==================  YMC  ===================================
 	{
@@ -688,7 +688,7 @@ var Consoles = []ConsoleConfig{
 	},
 }
 
-// 品牌列表
+// Brand list
 var Brands = []string{
 	"YMC",
 	"UDT",
@@ -795,7 +795,7 @@ const (
 	KOREAN  LanguageVariant = "ko"
 )
 
-// ===================== 超频配置 =====================
+// ===================== Overclocking configuration =====================
 type FreqOption struct {
 	Value int
 }
@@ -832,7 +832,7 @@ var ddrFreqOptions = []FreqOption{
 	{194}, {328}, {450}, {528}, {666}, {786}, {924}, {1040},
 }
 
-// 超频相关的多语言字符串
+// Overclocking-related multilingual strings
 type LanguageOverclock struct {
 	AskOverclock         string
 	OverclockTitle       string
@@ -1156,10 +1156,10 @@ var (
 	}
 )
 
-// ===================== 全局输入 reader =====================
+// ===================== Global input reader =====================
 var stdinReader = bufio.NewReader(os.Stdin)
 
-// ===================== ANSI 颜色 & Fancy UI =====================
+// ===================== ANSI colors & fancy UI =====================
 var (
 	ansiReset   = "\033[0m"
 	ansiRed     = "\033[31m"
@@ -1210,7 +1210,7 @@ func fancyHeader(title string) {
 	fmt.Println()
 }
 
-// ===================== 交互说明（双语） =====================
+// ===================== Interaction notes (bilingual) =====================
 var (
 	HDR  = ansiBold + ansiGreen
 	BUL  = ansiBlue
@@ -1255,7 +1255,7 @@ func introAndWaitFancy(lang *Language) {
 	}
 }
 
-// ===================== 屏幕/终端检查 =====================
+// ===================== Screen/terminal checks =====================
 func isTerminal() bool {
 	info, err := os.Stdin.Stat()
 	if err != nil {
@@ -1280,7 +1280,7 @@ func clearScreen() {
 	}
 }
 
-// ===================== 输入工具（双语提示） =====================
+// ===================== Input helpers (bilingual prompts) =====================
 func prompt(msg string) (string, error) {
 	if !isTerminal() {
 		return "", errors.New("non-interactive stdin")
@@ -1308,7 +1308,7 @@ func readIntChoice(lang *Language, msg string) (int, error) {
 	}
 }
 
-// ===================== 文件操作 =====================
+// ===================== File operations =====================
 func cleanTargetDirectory(lang *Language, baseDir string) error {
 	cleanup := &lang.Cleanup
 
@@ -1392,7 +1392,7 @@ func copyDirectory(src, dst string) error {
 	})
 }
 
-// ===================== 菜单相关（双语） =====================
+// ===================== Menu handling (bilingual) =====================
 type SelectedConsole struct {
 	Config      *ConsoleConfig
 	DisplayName string
@@ -1639,7 +1639,7 @@ func showMenu(lang *Language) (*SelectedConsole, error) {
 	}
 }
 
-// ===================== 电池版本选择 =====================
+// ===================== Battery version selection =====================
 func selectBatteryVersion(lang *Language) (string, error) {
 	clearScreen()
 	fmt.Println()
@@ -1665,7 +1665,7 @@ func selectBatteryVersion(lang *Language) (string, error) {
 	}
 }
 
-// ===================== 超频选择 =====================
+// ===================== Overclocking selection =====================
 func selectFrequency(lang *Language, label string, options []FreqOption, defaultVal int, defaultLabels map[int]string, extremeFreq int) (int, error) {
 	for {
 		clearScreen()
@@ -1718,7 +1718,7 @@ func selectOverclocking(lang *Language) (*OverclockConfig, error) {
 		return nil, nil
 	}
 
-	// 超频警告
+	// Overclocking warning
 	clearScreen()
 	fmt.Println()
 	fmt.Println(colorWrap("┌────────────────────────────────────────┐", ansiRed))
@@ -1759,7 +1759,7 @@ func selectOverclocking(lang *Language) (*OverclockConfig, error) {
 	cfg.GPU.MaxFreq = gpuFreq
 	cfg.GPU.BootFreq = gpuFreq
 
-	// DDR 提示
+	// DDR tip
 	fmt.Println(colorWrap(lang.Overclock.GPUDDRFreezeTip, ansiBold+ansiRed))
 
 	// DDR
@@ -1770,7 +1770,7 @@ func selectOverclocking(lang *Language) (*OverclockConfig, error) {
 	cfg.DDR.MaxFreq = ddrFreq
 	cfg.DDR.BootFreq = ddrFreq
 
-	// 电压选择
+	// Voltage selection
 	voltage, err := selectVoltage(lang)
 	if err != nil {
 		return nil, err
@@ -1790,7 +1790,7 @@ func filterFreqOptions(options []FreqOption, maxVal int) []FreqOption {
 	return filtered
 }
 
-// ===================== 电压选择 =====================
+// ===================== Voltage selection =====================
 func selectVoltage(lang *Language) (bool, error) {
 	clearScreen()
 	fmt.Println()
@@ -1812,7 +1812,7 @@ func selectVoltage(lang *Language) (bool, error) {
 		return false, nil
 	}
 
-	// 要求用户输入确认文本
+	// Ask the user to type the confirmation text
 	clearScreen()
 	fmt.Println()
 	fmt.Println(colorWrap("┌────────────────────────────────────────┐", ansiRed))
@@ -1837,7 +1837,7 @@ func selectVoltage(lang *Language) (bool, error) {
 	return true, nil
 }
 
-// ===================== 写入超频参数到 boot.ini =====================
+// ===================== Write overclocking parameters to boot.ini =====================
 func applyOverclockingToBootIni(baseDir string, oc *OverclockConfig) error {
 	bootIni := filepath.Join(baseDir, "boot.ini")
 	data, err := os.ReadFile(bootIni)
@@ -1847,7 +1847,7 @@ func applyOverclockingToBootIni(baseDir string, oc *OverclockConfig) error {
 
 	content := string(data)
 
-	// 写入用户选择的频率参数
+	// Write the frequency parameters chosen by the user
 	ocArgs := fmt.Sprintf("max_cpufreq=%d boot_cpufreq=%d max_gpufreq=%d max_ddrfreq=%d",
 		oc.CPU.MaxFreq, oc.CPU.BootFreq, oc.GPU.MaxFreq, oc.DDR.MaxFreq)
 	re := regexp.MustCompile(`(setenv\s+bootargs\s+"[^"]*?)((?:\s+(?:max_cpufreq|boot_cpufreq|max_gpufreq|boot_gpufreq|max_ddrfreq|boot_ddrfreq)=\d+)*)\s*"`)
@@ -1856,12 +1856,12 @@ func applyOverclockingToBootIni(baseDir string, oc *OverclockConfig) error {
 	}
 
 	if oc.Voltage {
-		// 添加 dtbo_loadaddr 变量
+		// Add the dtbo_loadaddr variable
 		content = strings.Replace(content,
 			`setenv dtb_loadaddr "0x01f00000"`,
 			"setenv dtb_loadaddr \"0x01f00000\"\nsetenv dtbo_loadaddr \"0x01f30000\"", 1)
 
-		// 在 load dtb 后面追加 load dtbo 和 fdt 操作
+		// Append the load dtbo and fdt operations after load dtb
 		lines := strings.Split(content, "\n")
 		var newLines []string
 		for _, line := range lines {
@@ -1880,7 +1880,7 @@ func applyOverclockingToBootIni(baseDir string, oc *OverclockConfig) error {
 	return os.WriteFile(bootIni, []byte(content), 0644)
 }
 
-// ===================== 复制逻辑 =====================
+// ===================== Copy logic =====================
 func copySelectedConsole(lang *Language, selected *SelectedConsole, baseDir string) error {
 	if selected == nil || selected.Config == nil {
 		return errors.New("no console selected")
@@ -1897,7 +1897,7 @@ func copySelectedConsole(lang *Language, selected *SelectedConsole, baseDir stri
 		return fmt.Errorf("failed to copy console: %v", err)
 	}
 
-	// 让用户选择电池驱动版本并复制 Image
+	// Let the user choose the battery driver version and copy the Image
 	batteryVersion, err := selectBatteryVersion(lang)
 	if err != nil {
 		return fmt.Errorf("failed to select battery version: %v", err)
@@ -1914,7 +1914,7 @@ func copySelectedConsole(lang *Language, selected *SelectedConsole, baseDir stri
 		}
 	}
 
-	// 超频参数选择
+	// Overclocking parameter selection
 	ocCfg, err := selectOverclocking(lang)
 	if err != nil {
 		return fmt.Errorf("failed to select overclocking: %v", err)
@@ -2030,7 +2030,7 @@ func main() {
 
 	showSuccessFancy(lang, selected.DisplayName)
 
-	// 根据菜单语言生成语言标记文件
+	// Create the language marker file based on the menu language
 	if lang.Variant == CHINESE || lang.Variant == KOREAN {
 		f, err := os.Create(filepath.Join(baseDir, "."+string(lang.Variant)))
 		if err != nil {

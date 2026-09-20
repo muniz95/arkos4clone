@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ArkOS4Clone 一键构建脚本
-# 用法: sudo ./build_image.sh <镜像路径> [工作目录]
-# 工作目录用于存放镜像副本和处理文件，建议使用 ext4 文件系统以获得最佳性能
+# ArkOS4Clone one-click build script
+# Usage: sudo ./build_image.sh <image path> [work directory]
+# The work directory holds the image copy and intermediate files; ext4 is recommended for best performance
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 时间戳格式 (与 clone_support.sh 一致)
+# Timestamp format (matches clone_support.sh)
 BUILD_DATE="$(TZ=Asia/Shanghai date +%m%d%Y)"
 OUTPUT_NAME="ArkOS4Clone-${BUILD_DATE}"
 
-# 颜色输出
+# Colored output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -25,7 +25,7 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 need_root() {
   if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
-    log_error "请使用 sudo 运行此脚本"
+    log_error "Please run this script with sudo"
     exit 1
   fi
 }
@@ -33,25 +33,25 @@ need_root() {
 check_image() {
   local img="$1"
   if [[ ! -f "$img" ]]; then
-    log_error "镜像文件不存在: $img"
+    log_error "Image file does not exist: $img"
     exit 1
   fi
   if [[ ! -r "$img" ]]; then
-    log_error "无法读取镜像文件: $img"
+    log_error "Cannot read image file: $img"
     exit 1
   fi
-  log_ok "源镜像: $img"
+  log_ok "Source image: $img"
 }
 
 check_tools() {
   local tools=(losetup mount umount parted rsync dd xz)
   for t in "${tools[@]}"; do
     if ! command -v "$t" >/dev/null 2>&1; then
-      log_error "缺少工具: $t"
+      log_error "Missing tool: $t"
       exit 1
     fi
   done
-  log_ok "必需工具检查通过"
+  log_ok "Required tools check passed"
 }
 
 check_uboot_files() {
@@ -59,11 +59,11 @@ check_uboot_files() {
   local files=("idbloader.img" "uboot.img" "trust.img" "flash_uboot.sh")
   for f in "${files[@]}"; do
     if [[ ! -f "$uboot_dir/$f" ]]; then
-      log_error "缺少 U-Boot 文件: $uboot_dir/$f"
+      log_error "Missing U-Boot file: $uboot_dir/$f"
       exit 1
     fi
   done
-  log_ok "U-Boot 文件检查通过"
+  log_ok "U-Boot files check passed"
 }
 
 check_jdk_file() {
@@ -71,25 +71,25 @@ check_jdk_file() {
   local jdk_url="https://cdn.azul.com/zulu-embedded/bin/zulu11.48.21-ca-jdk11.0.11-linux_aarch64.tar.gz"
   
   if [[ -f "$SCRIPT_DIR/$jdk_file" ]]; then
-    log_ok "JDK 文件已存在: $jdk_file"
+    log_ok "JDK file already present: $jdk_file"
     return
   fi
   
-  log_info "下载 JDK 文件..."
-  # 以原用户身份下载（避免权限问题）
+  log_info "Downloading JDK file..."
+  # Download as the original user (avoids permission problems)
   if [[ -n "${SUDO_USER:-}" ]]; then
     if sudo -u "$SUDO_USER" wget $WGET_OPTS -O "$SCRIPT_DIR/$jdk_file" "$jdk_url"; then
-      log_ok "JDK 下载完成: $jdk_file"
+      log_ok "JDK download complete: $jdk_file"
     else
-      log_error "JDK 下载失败"
+      log_error "JDK download failed"
       sudo -u "$SUDO_USER" rm -f "$SCRIPT_DIR/$jdk_file" 2>/dev/null || true
       exit 1
     fi
   else
     if wget $WGET_OPTS -O "$SCRIPT_DIR/$jdk_file" "$jdk_url"; then
-      log_ok "JDK 下载完成: $jdk_file"
+      log_ok "JDK download complete: $jdk_file"
     else
-      log_error "JDK 下载失败"
+      log_error "JDK download failed"
       rm -f "$SCRIPT_DIR/$jdk_file" 2>/dev/null || true
       exit 1
     fi
@@ -100,7 +100,7 @@ check_pm_libs() {
   local pm_libs_dir="$SCRIPT_DIR/bin/pm_libs"
   local runtimes_url="https://github.com/PortsMaster/PortMaster-New/releases/download/2026-08-05_0732/runtimes.all.aarch64.zip"
 
-  # 需要的文件列表
+  # List of required files
   local required_files=(
     "ags_3.6.squashfs"
     "dotnet-8.0.12.squashfs"
@@ -149,12 +149,12 @@ check_pm_libs() {
     "zulu8.86.0.25-ca-jdk8.0.452-linux.squashfs"
   )
 
-  # 检查目录是否存在
+  # Check whether the directory exists
   if [[ ! -d "$pm_libs_dir" ]]; then
     mkdir -p "$pm_libs_dir"
   fi
 
-  # 检查缺少的文件
+  # Check for missing files
   local missing=0
   for f in "${required_files[@]}"; do
     if [[ ! -f "$pm_libs_dir/$f" ]]; then
@@ -164,55 +164,55 @@ check_pm_libs() {
   done
 
   if [[ $missing -eq 0 ]]; then
-    log_ok "pm_libs 文件完整"
+    log_ok "pm_libs files are complete"
     return
   fi
 
-  log_info "下载 PortMaster runtimes (约 1.6GB)..."
+  log_info "Downloading PortMaster runtimes (about 1.6GB)..."
   local zip_file="$pm_libs_dir/runtimes.zip"
 
-  # 下载
+  # Download
   if [[ -n "${SUDO_USER:-}" ]]; then
     if sudo -u "$SUDO_USER" wget $WGET_OPTS -O "$zip_file" "$runtimes_url"; then
-      log_ok "runtimes 下载完成"
+      log_ok "runtimes download complete"
     else
-      log_error "runtimes 下载失败"
+      log_error "runtimes download failed"
       sudo -u "$SUDO_USER" rm -f "$zip_file" 2>/dev/null || true
       exit 1
     fi
-    # 解压
-    log_info "解压 runtimes..."
+    # Extract
+    log_info "Extracting runtimes..."
     sudo -u "$SUDO_USER" unzip -o -q "$zip_file" -d "$pm_libs_dir"
     sudo -u "$SUDO_USER" rm -f "$zip_file"
   else
     if wget $WGET_OPTS -O "$zip_file" "$runtimes_url"; then
-      log_ok "runtimes 下载完成"
+      log_ok "runtimes download complete"
     else
-      log_error "runtimes 下载失败"
+      log_error "runtimes download failed"
       rm -f "$zip_file" 2>/dev/null || true
       exit 1
     fi
-    # 解压
-    log_info "解压 runtimes..."
+    # Extract
+    log_info "Extracting runtimes..."
     unzip -o -q "$zip_file" -d "$pm_libs_dir"
     rm -f "$zip_file"
   fi
 
-  log_ok "pm_libs 文件准备完成"
+  log_ok "pm_libs files are ready"
 }
 
 check_work_dir() {
   local dir="$1"
   if [[ ! -d "$dir" ]]; then
-    log_info "创建工作目录: $dir"
+    log_info "Creating work directory: $dir"
     mkdir -p "$dir"
   fi
-  # 检查是否可写
+  # Check that it is writable
   if [[ ! -w "$dir" ]]; then
-    log_error "工作目录不可写: $dir"
+    log_error "Work directory is not writable: $dir"
     exit 1
   fi
-  log_ok "工作目录: $dir"
+  log_ok "Work directory: $dir"
 }
 
 check_portmaster() {
@@ -220,46 +220,46 @@ check_portmaster() {
   local pm_url="https://github.com/PortsMaster/PortMaster-GUI/releases/download/2026.07.28-1212/PortMaster.zip"
 
   if [[ -d "$pm_dir" && -f "$pm_dir/PortMaster.sh" ]]; then
-    log_ok "PortMaster 目录已存在"
+    log_ok "PortMaster directory already exists"
     return
   fi
 
-  log_info "下载 PortMaster..."
+  log_info "Downloading PortMaster..."
   local zip_file="$SCRIPT_DIR/PortMaster.zip"
 
   if [[ -n "${SUDO_USER:-}" ]]; then
     if sudo -u "$SUDO_USER" wget $WGET_OPTS -O "$zip_file" "$pm_url"; then
-      log_ok "PortMaster 下载完成"
+      log_ok "PortMaster download complete"
     else
-      log_error "PortMaster 下载失败"
+      log_error "PortMaster download failed"
       sudo -u "$SUDO_USER" rm -f "$zip_file" 2>/dev/null || true
       exit 1
     fi
-    log_info "解压 PortMaster..."
+    log_info "Extracting PortMaster..."
     sudo -u "$SUDO_USER" unzip -q -o "$zip_file" -d "$SCRIPT_DIR"
     sudo -u "$SUDO_USER" rm -f "$zip_file"
   else
     if wget $WGET_OPTS -O "$zip_file" "$pm_url"; then
-      log_ok "PortMaster 下载完成"
+      log_ok "PortMaster download complete"
     else
-      log_error "PortMaster 下载失败"
+      log_error "PortMaster download failed"
       rm -f "$zip_file" 2>/dev/null || true
       exit 1
     fi
-    log_info "解压 PortMaster..."
+    log_info "Extracting PortMaster..."
     unzip -q -o "$zip_file" -d "$SCRIPT_DIR"
     rm -f "$zip_file"
   fi
 
-  log_ok "PortMaster 准备完成"
+  log_ok "PortMaster is ready"
 }
 
 check_clone_dependencies() {
-  log_info "检查 clone_support.sh 依赖..."
+  log_info "Checking clone_support.sh dependencies..."
   local missing=0
   local missing_list=""
 
-  # 检查必需目录
+  # Check required directories
   local dirs=(
     "consoles"
     "bin"
@@ -296,11 +296,11 @@ check_clone_dependencies() {
   for d in "${dirs[@]}"; do
     if [[ ! -d "$SCRIPT_DIR/$d" ]]; then
       missing=1
-      missing_list="$missing_list\n  缺少目录: $d"
+      missing_list="$missing_list\n  Missing directory: $d"
     fi
   done
 
-  # 检查必需文件
+  # Check required files
   local files=(
     "dtb_selector_macos"
     "dtb_selector_win32.exe"
@@ -332,66 +332,66 @@ check_clone_dependencies() {
   for f in "${files[@]}"; do
     if [[ ! -f "$SCRIPT_DIR/$f" ]]; then
       missing=1
-      missing_list="$missing_list\n  缺少文件: $f"
+      missing_list="$missing_list\n  Missing file: $f"
     fi
   done
 
   if [[ $missing -eq 1 ]]; then
-    log_error "clone_support.sh 依赖检查失败"
+    log_error "clone_support.sh dependency check failed"
     echo -e "$missing_list"
     exit 1
   fi
 
-  log_ok "clone_support.sh 依赖检查通过"
+  log_ok "clone_support.sh dependency check passed"
 }
 
 step_build_dtb_selector() {
-  log_info "步骤 0: 编译 dtb_selector 工具..."
+  log_info "Step 0: Building the dtb_selector tool..."
   if [[ -f "$SCRIPT_DIR/build_dtb_selector.sh" ]]; then
     cd "$SCRIPT_DIR"
-    # 以原用户身份执行编译（保留 PATH 环境变量）
+    # Build as the original user (preserving the PATH environment variable)
     if [[ -n "${SUDO_USER:-}" ]]; then
       if sudo -u "$SUDO_USER" env PATH="$PATH" ./build_dtb_selector.sh; then
-        log_ok "dtb_selector 编译完成"
+        log_ok "dtb_selector build complete"
       else
-        log_warn "dtb_selector 编译失败，跳过（可能已存在）"
+        log_warn "dtb_selector build failed, skipping (it may already exist)"
       fi
     else
       if ./build_dtb_selector.sh; then
-        log_ok "dtb_selector 编译完成"
+        log_ok "dtb_selector build complete"
       else
-        log_warn "dtb_selector 编译失败，跳过（可能已存在）"
+        log_warn "dtb_selector build failed, skipping (it may already exist)"
       fi
     fi
     cd - > /dev/null
   else
-    log_warn "未找到 build_dtb_selector.sh，跳过"
+    log_warn "build_dtb_selector.sh not found, skipping"
   fi
 }
 
 copy_image() {
   local src="$1"
   local dst="$2"
-  log_info "复制源镜像到工作目录..."
+  log_info "Copying the source image to the work directory..."
   cp "$src" "$dst"
-  log_ok "已创建工作副本: $dst"
+  log_ok "Work copy created: $dst"
 }
 
 step_grow() {
   local img="$1"
-  log_info "步骤 2/7: 扩容镜像分区..."
+  log_info "Step 2/7: Expanding the image partitions..."
   if "$SCRIPT_DIR/grow_p2_plus.sh" "$img"; then
-    log_ok "分区扩容完成"
+    log_ok "Partition expansion complete"
   else
-    log_error "分区扩容失败"
+    log_error "Partition expansion failed"
     exit 1
   fi
 }
 
 step_flash_uboot() {
   local img="$1"
-  log_info "步骤 3/7: 写入 U-Boot..."
-  # 需要在 uboot 目录下执行，并使用绝对路径
+  log_info "Step 3/7: Writing U-Boot..."
+  # Must run inside the uboot directory and use an absolute path
   local abs_img
   if [[ "$img" = /* ]]; then
     abs_img="$img"
@@ -400,9 +400,9 @@ step_flash_uboot() {
   fi
   cd "$SCRIPT_DIR/uboot"
   if ./flash_uboot.sh -y -i "$abs_img"; then
-    log_ok "U-Boot 写入完成"
+    log_ok "U-Boot write complete"
   else
-    log_error "U-Boot 写入失败"
+    log_error "U-Boot write failed"
     cd "$SCRIPT_DIR"
     exit 1
   fi
@@ -411,33 +411,33 @@ step_flash_uboot() {
 
 step_mount() {
   local img="$1"
-  log_info "步骤 4/7: 挂载镜像..."
+  log_info "Step 4/7: Mounting the image..."
   if "$SCRIPT_DIR/mount_arkos.sh" mount "$img"; then
-    log_ok "镜像挂载完成"
+    log_ok "Image mounted successfully"
   else
-    log_error "镜像挂载失败"
+    log_error "Failed to mount the image"
     exit 1
   fi
 }
 
 step_inject() {
-  log_info "步骤 5/7: 注入定制内容..."
+  log_info "Step 5/7: Injecting the customized content..."
   if "$SCRIPT_DIR/clone_support.sh"; then
-    log_ok "内容注入完成"
+    log_ok "Content injection complete"
   else
-    log_error "内容注入失败"
-    # 尝试卸载
+    log_error "Content injection failed"
+    # Try to unmount
     "$SCRIPT_DIR/mount_arkos.sh" unmount 2>/dev/null || true
     exit 1
   fi
 }
 
 step_unmount() {
-  log_info "步骤 6/7: 卸载镜像..."
+  log_info "Step 6/7: Unmounting the image..."
   if "$SCRIPT_DIR/mount_arkos.sh" unmount; then
-    log_ok "镜像卸载完成"
+    log_ok "Image unmounted successfully"
   else
-    log_error "镜像卸载失败"
+    log_error "Failed to unmount the image"
     exit 1
   fi
 }
@@ -445,14 +445,14 @@ step_unmount() {
 step_compress() {
   local img="$1"
   local xz_file="${img}.xz"
-  log_info "步骤 7/7: 压缩镜像 (xz -5)..."
+  log_info "Step 7/7: Compressing the image (xz -5)..."
   
-  # 压缩等级 5，多线程
+  # Compression level 5, multi-threaded
   if xz -5 -T0 -v "$img"; then
-    log_ok "压缩完成: $xz_file"
-    log_ok "文件大小: $(du -h "$xz_file" | cut -f1)"
+    log_ok "Compression complete: $xz_file"
+    log_ok "File size: $(du -h "$xz_file" | cut -f1)"
   else
-    log_error "压缩失败"
+    log_error "Compression failed"
     exit 1
   fi
 }
@@ -460,61 +460,61 @@ step_compress() {
 move_to_script_dir() {
   local xz_file="$1"
   local dest="$SCRIPT_DIR/$(basename "$xz_file")"
-  log_info "移动输出文件到脚本目录..."
+  log_info "Moving the output file to the script directory..."
   mv "$xz_file" "$dest" || true
-  log_ok "输出文件: $dest"
+  log_ok "Output file: $dest"
 }
 
 show_usage() {
   cat << USAGE
-ArkOS4Clone 一键构建脚本
+ArkOS4Clone one-click build script
 
-用法:
-  sudo ./build_image.sh <源镜像路径> [工作目录] [--ci]
+Usage:
+  sudo ./build_image.sh <source image path> [work directory] [--ci]
 
-参数:
-  源镜像路径    必需，原始 ArkOS 镜像文件路径
-  工作目录      可选，用于存放镜像副本和处理文件
-                建议使用 ext4 文件系统以获得最佳性能
-                默认: 源镜像所在目录
-  --ci          可选，静默模式，减少下载进度等刷屏日志
+Arguments:
+  source image path   Required. Path to the original ArkOS image file.
+  work directory      Optional. Holds the image copy and intermediate files.
+                      ext4 is recommended for best performance.
+                      Default: the directory containing the source image.
+  --ci                Optional. Quiet mode; reduces noisy logs such as download progress.
 
-环境变量:
-  ARKOS_MNT       挂载路径 (默认: <工作目录>/mnt)
-  ARKOS_WORK_DIR  临时工作目录 (默认: <工作目录>)
+Environment variables:
+  ARKOS_MNT       Mount path (default: <work directory>/mnt)
+  ARKOS_WORK_DIR  Temporary work directory (default: <work directory>)
 
-示例:
-  # 使用默认工作目录（源镜像所在目录）
+Examples:
+  # Use the default work directory (the directory containing the source image)
   sudo ./build_image.sh /path/to/ArkOS-*.img
 
-  # 指定工作目录（推荐，使用 ext4 文件系统）
+  # Specify a work directory (recommended, on an ext4 filesystem)
   sudo ./build_image.sh /mnt/e/ArkOS.img /home/lcdyk/arkos
 
-执行步骤:
-  0. 编译 dtb_selector 工具 (build_dtb_selector.sh)
-  1. 复制源镜像到工作目录
-  2. 扩容镜像分区 (grow_p2_plus.sh)
-  3. 写入 U-Boot (flash_uboot.sh)
-  4. 挂载镜像 (mount_arkos.sh mount)
-  5. 注入定制内容 (clone_support.sh)
-  6. 卸载镜像 (mount_arkos.sh unmount)
-  7. 压缩为 xz 格式 (等级 5)
-  8. 移动输出文件到脚本目录
+Steps performed:
+  0. Build the dtb_selector tool (build_dtb_selector.sh)
+  1. Copy the source image to the work directory
+  2. Expand the image partitions (grow_p2_plus.sh)
+  3. Write U-Boot (flash_uboot.sh)
+  4. Mount the image (mount_arkos.sh mount)
+  5. Inject the customized content (clone_support.sh)
+  6. Unmount the image (mount_arkos.sh unmount)
+  7. Compress to xz format (level 5)
+  8. Move the output file to the script directory
 
-输出:
-  <脚本目录>/ArkOS4Clone-MMDDYYYY.img.xz
+Output:
+  <script directory>/ArkOS4Clone-MMDDYYYY.img.xz
 
-注意:
-  - 源镜像文件不会被修改
-  - 工作目录建议使用 ext4 文件系统，避免 WSL 的 /mnt 路径以提高性能
+Notes:
+  - The source image file is never modified.
+  - An ext4 work directory is recommended; avoid WSL /mnt paths for better performance.
 
 USAGE
 }
 
 main() {
-  # 首先检查 root 权限
+  # Check for root privileges first
   if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
-    log_error "请使用 sudo 运行此脚本"
+    log_error "Please run this script with sudo"
     exit 1
   fi
 
@@ -524,7 +524,7 @@ main() {
   fi
 
   if [[ $# -lt 1 ]]; then
-    log_error "缺少参数: 镜像路径"
+    log_error "Missing argument: image path"
     echo ""
     show_usage
     exit 1
@@ -532,27 +532,27 @@ main() {
 
   local source_image="$1"
   
-  # 确定工作目录
+  # Determine the work directory
   local work_dir
   if [[ $# -ge 2 ]]; then
     work_dir="$2"
   else
-    # 默认使用源镜像所在目录
+    # Default to the directory containing the source image
     work_dir="$(cd "$(dirname "$source_image")" && pwd)"
   fi
   
-  # 转换为绝对路径
+  # Convert to an absolute path
   if [[ "$work_dir" != /* ]]; then
     work_dir="$(pwd)/$work_dir"
   fi
 
-  # 设置环境变量
+  # Set environment variables
   ARKOS_MNT="${ARKOS_MNT:-${work_dir}/mnt}"
   ARKOS_WORK_DIR="${ARKOS_WORK_DIR:-${work_dir}}"
   ARKOS_IMAGE_NAME="$(basename "$source_image")"
   export ARKOS_MNT ARKOS_WORK_DIR ARKOS_IMAGE_NAME
 
-  # 第三个参数 --ci: 静默模式，减少 CI 环境下的刷屏日志
+  # Third argument --ci: quiet mode, reduces noisy logs in CI environments
   if [[ "${3:-}" == "--ci" ]]; then
     WGET_OPTS="-q"
     export ARKOS_QUIET=1
@@ -560,7 +560,7 @@ main() {
     WGET_OPTS="-q --show-progress"
   fi
 
-  # 根据源镜像名决定输出前缀
+  # Choose the output prefix based on the source image name
   local output_prefix
   if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
     output_prefix="dArkOS4Clone"
@@ -570,36 +570,36 @@ main() {
   local work_image="${work_dir}/${output_prefix}-${BUILD_DATE}.img"
 
   echo "========================================"
-  echo "  ArkOS4Clone 一键构建脚本"
+  echo "  ArkOS4Clone one-click build script"
   echo "========================================"
-  echo "源镜像:   $source_image"
-  echo "工作目录: $work_dir"
-  echo "工作副本: $work_image"
-  echo "挂载路径: $ARKOS_MNT"
+  echo "Source image: $source_image"
+  echo "Work dir:     $work_dir"
+  echo "Work copy:    $work_image"
+  echo "Mount path:   $ARKOS_MNT"
   echo "========================================"
   echo ""
 
-  # 步骤 0: 编译 dtb_selector (不需要 root)
+  # Step 0: Build dtb_selector (does not need root)
   step_build_dtb_selector
   echo ""
 
-  # 前置检查 (不需要 root)
+  # Pre-flight checks (do not need root)
   check_tools
   check_jdk_file
   check_portmaster
   check_pm_libs
   check_clone_dependencies
 
-  # 需要 root 的检查
+  # Checks that need root
   check_image "$source_image"
   check_work_dir "$work_dir"
   check_uboot_files
 
-  # 步骤 1: 复制镜像
+  # Step 1: Copy the image
   echo ""
   copy_image "$source_image" "$work_image"
 
-  # 执行构建流程
+  # Run the build pipeline
   echo ""
   step_grow "$work_image"
   echo ""
@@ -611,16 +611,16 @@ main() {
   echo ""
   step_unmount
 
-  # 压缩并移动
+  # Compress and move
   echo ""
   step_compress "$work_image"
   move_to_script_dir "${work_image}.xz"
 
   echo ""
   echo "========================================"
-  log_ok "构建完成!"
-  echo "输出文件: $SCRIPT_DIR/$(basename "${work_image}").xz"
-  echo "源文件保留: $source_image"
+  log_ok "Build complete!"
+  echo "Output file: $SCRIPT_DIR/$(basename "${work_image}").xz"
+  echo "Source file kept: $source_image"
   echo "========================================"
 }
 

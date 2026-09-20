@@ -1,4 +1,4 @@
-name: dArkOS4Clone的构建和发布(Preview)
+name: dArkOS4Clone Build and Release (Preview)
 
 on:
   workflow_dispatch:
@@ -35,12 +35,12 @@ jobs:
 
       - name: Download & extract source image
         run: |
-          echo "=== 获取 dArkOS 最新 Release 信息 ==="
+          echo "=== Fetching latest dArkOS release info ==="
           RELEASE_JSON=$(curl -s https://api.github.com/repos/christianhaitian/dArkOS/releases/latest)
           TAG_NAME=$(echo "$RELEASE_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
-          echo "最新 Release tag: $TAG_NAME"
+          echo "Latest release tag: $TAG_NAME"
 
-          echo "=== 查找 G350 相关资源 ==="
+          echo "=== Looking for G350 assets ==="
           ASSETS=$(echo "$RELEASE_JSON" | python3 -c "
           import sys, json
           data = json.load(sys.stdin)
@@ -52,11 +52,11 @@ jobs:
           echo "$ASSETS"
 
           if [ -z "$ASSETS" ]; then
-            echo "ERROR: 未找到包含 G350 的资源"
+            echo "ERROR: No asset containing G350 was found"
             exit 1
           fi
 
-          echo "=== 下载分卷 ==="
+          echo "=== Downloading split archive parts ==="
           for url in $ASSETS; do
             echo "Downloading $(basename "$url") ..."
             wget --progress=bar:force:noscroll "$url" || { echo "Failed to download $url"; exit 1; }
@@ -68,13 +68,13 @@ jobs:
             exit 1
           fi
 
-          echo "=== 解压 7z 分卷 ==="
+          echo "=== Extracting 7z split archive ==="
           7z x "$FIRST_PART" -o. -y
 
-          echo "=== 删除中间文件，释放空间 ==="
+          echo "=== Removing intermediate files to free up space ==="
           rm -f *.7z.001 *.7z.002 *.7z.003
 
-          echo "=== 确认 img ==="
+          echo "=== Verifying img ==="
           IMG_FILE=$(ls *.img 2>/dev/null | head -1)
           if [ -z "$IMG_FILE" ]; then
             echo "ERROR: No .img file found"
@@ -102,16 +102,16 @@ jobs:
           LIMIT=$((1900 * 1024 * 1024))
 
           if [ "$FILE_SIZE" -gt "$LIMIT" ]; then
-            echo "文件超过1900M，7z分卷压缩..."
+            echo "File exceeds 1900M, compressing into 7z split archive..."
             7z a -v1900m -mx=0 "${XZ_FILE}.7z" "$XZ_FILE"
             FILES=$(ls ${XZ_FILE}.7z.* | tr '\n' ' ')
           else
             FILES="$XZ_FILE"
           fi
 
-          echo "上传文件: $FILES"
+          echo "Uploading files: $FILES"
           gh release create "$BUILD_DATE" \
             $FILES \
             --title "dArkOS4Clone-$BUILD_DATE" \
-            --notes "dArkOS4Clone 构建版本 - $BUILD_DATE" \
+            --notes "dArkOS4Clone build - $BUILD_DATE" \
             --draft=true

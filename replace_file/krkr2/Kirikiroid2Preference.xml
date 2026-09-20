@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GlobalPreference>
-    <!-- 图片缓存限制 30MB (单位:字节) -->
-    <!-- 917MB设备建议20-40MB -->
+    <!-- Image cache limit 30MB (unit: bytes) -->
+    <!-- 20-40MB recommended on 917MB devices -->
     <Item key="graphicCacheLimit" value="31457280"/>
 
-    <!-- 纹理压缩: etc2/half/none -->
-    <!-- ETC2压缩减少75%显存，Mali-G31支持 -->
+    <!-- Texture compression: etc2/half/none -->
+    <!-- ETC2 compression cuts video memory by 75%; supported by the Mali-G31 -->
     <Item key="ogl_compress_tex" value="etc2"/>
 
-    <!-- 最大纹理尺寸，超过会缩放 -->
-    <!-- 720p屏幕设置512-1024足够 -->
+    <!-- Maximum texture size; anything larger is scaled down -->
+    <!-- 512-1024 is enough for a 720p screen -->
     <Item key="ogl_max_texsize" value="768"/>
 
-    <!-- 禁用BPG解码器（节省内存） -->
+    <!-- Disable the BPG decoder (saves memory) -->
     <Item key="enable_bpg" value="0"/>
 
-    <!-- 语言 (zh_CN/ja_JP/en_US) -->
+    <!-- Language (zh_CN/ja_JP/en_US) -->
     <Item key="language" value="zh_CN"/>
 </GlobalPreference>

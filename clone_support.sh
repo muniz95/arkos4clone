@@ -10,16 +10,16 @@ MODDER="kk&lcdyk"
 
 RSYNC_BOOT_OPTS="-rltD --no-owner --no-group --no-perms --omit-dir-times"
 
-safe() { "$@" 2>/dev/null || echo "[WARN] 失败: $*"; }
+safe() { "$@" 2>/dev/null || echo "[WARN] Failed: $*"; }
 
 if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   # ============================================================
-  # dArkOS 专用逻辑 (UID=1000)
+  # dArkOS-specific logic (UID=1000)
   # ============================================================
-  echo "=== 检测到 dArkOS 镜像，执行 dArkOS 专用注入 ==="
+  echo "=== dArkOS image detected, running the dArkOS-specific injection ==="
   CHOWN_USER="1000:1000"
 
-  echo "== 注入 boot =="
+  echo "== Injecting boot =="
   safe sudo mkdir -p "$MOUNT_DIR/boot/consoles"
   sudo rsync $RSYNC_BOOT_OPTS --exclude='files' ./consoles/ "$MOUNT_DIR/boot/consoles/"
   safe sudo rm -rf "$MOUNT_DIR/boot/consoles/logo"
@@ -27,12 +27,12 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo cp -f ./sh/clone.sh ./dtb_selector_macos ./dtb_selector_linux32 ./dtb_selector_win32.exe ./sh/expandtoexfat.sh "$MOUNT_DIR/boot/"
   safe sudo cp -f "$SCRIPT_DIR/sh/darkos-expandtoexfat.sh" "$MOUNT_DIR/boot/expandtoexfat.sh"
 
-  echo "== 注入按键信息 =="
+  echo "== Injecting button mapping info =="
   safe sudo mkdir -p "$MOUNT_DIR/root/home/ark/.quirks"
   safe sudo cp -r ./consoles/files/* "$MOUNT_DIR/root/home/ark/.quirks/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/home/ark/.quirks/"
 
-  echo "== 注入 clone 用配置 =="
+  echo "== Injecting clone configuration =="
   safe sudo mkdir -p "$MOUNT_DIR/root/usr/bin"
   safe sudo cp -f ./bin/mcu_led ./bin/ws2812 "$MOUNT_DIR/root/usr/bin/"
   safe sudo cp -f ./bin/sdljoymap ./bin/sdljoytest "$MOUNT_DIR/root/usr/local/bin/"
@@ -44,7 +44,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/console_detect"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/bin/mcu_led" "$MOUNT_DIR/root/usr/bin/ws2812" "$MOUNT_DIR/root/usr/local/bin/sdljoytest" "$MOUNT_DIR/root/usr/local/bin/sdljoymap" "$MOUNT_DIR/root/usr/local/bin/console_detect"
 
-  echo "== 替换 modules (root) =="
+  echo "== Replacing modules (root) =="
   SRC="./replace_file/modules"
   DST="$MOUNT_DIR/root/usr/lib/modules"
   if [[ -d "$SRC" ]]; then
@@ -57,7 +57,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   fi
   safe sudo depmod -a -b "$MOUNT_DIR/root" 4.4.189 2>/dev/null
 
-  echo "== 添加 dArkOS 固件 =="
+  echo "== Adding dArkOS firmware =="
   FIRMWARE_SRC="$SCRIPT_DIR/replace_file/firmware"
   FIRMWARE_DST="$MOUNT_DIR/root/usr/lib/firmware"
   if [[ -d "$FIRMWARE_SRC" ]]; then
@@ -67,37 +67,37 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
     safe sudo chown -R root:root "$FIRMWARE_DST"
     safe sudo chmod -R 755 "$FIRMWARE_DST"
     safe sudo find "$FIRMWARE_DST" -type f -exec chmod 644 {} \;
-    echo "固件更新完成"
+    echo "Firmware update complete"
   else
-    echo "[warn] 固件源目录不存在: $FIRMWARE_SRC，跳过"
+    echo "[warn] Firmware source directory does not exist: $FIRMWARE_SRC, skipping"
   fi
 
-  echo "== 注入 915 固件 =="
+  echo "== Injecting 915 firmware =="
   safe sudo cp -f ./bin/rk915/* "$MOUNT_DIR/root/usr/lib/firmware/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/"rk915_*.bin 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/"rk915_*.bin 2>/dev/null
 
-  echo "== 注入 swt6621s 固件 =="
+  echo "== Injecting swt6621s firmware =="
   safe sudo cp -f ./bin/swt6621s/* "$MOUNT_DIR/root/usr/lib/firmware/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/"SWT6621S_*.bin 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/"SWT6621S_*.bin 2>/dev/null
 
-  echo "== 注入 aic8800DC 固件 =="
+  echo "== Injecting aic8800DC firmware =="
   safe sudo mkdir -p "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC"
   safe sudo cp -f ./bin/aic8800DC/* "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC" 2>/dev/null
 
-  echo "== 注入 351 系列手柄伪装规则  =="
+  echo "== Injecting 351-series gamepad spoofing rules  =="
   safe sudo cp -f ./bin/99-odroidgo3.rules "$MOUNT_DIR/root/etc/udev/rules.d" 2>/dev/null
 
-  echo "== 注入 351Files 自适应 =="
+  echo "== Injecting the adaptive 351Files build =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/351Files/res"
   safe sudo cp -r ./replace_file/351Files/. "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
 
-  echo "== 注入 dArkOS 启动脚本 =="
+  echo "== Injecting dArkOS startup scripts =="
   safe sudo cp -f ./replace_file/darkos4atomiswave.sh "$MOUNT_DIR/root/usr/local/bin/atomiswave.sh"
   safe sudo cp -f ./replace_file/darkos4dreamcast.sh "$MOUNT_DIR/root/usr/local/bin/dreamcast.sh"
   safe sudo cp -f ./replace_file/darkos4naomi.sh "$MOUNT_DIR/root/usr/local/bin/naomi.sh"
@@ -141,7 +141,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/freej2me.sh" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/get_last_played.sh" 2>/dev/null
 
-  echo "== 注入 es-service 服务脚本 =="
+  echo "== Injecting the es-service service script =="
   safe sudo cp -f ./bin/es-service/es-status-daemon.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/es-service/es-status-daemon.service "$MOUNT_DIR/root/etc/systemd/system/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/es-status-daemon.sh" 2>/dev/null
@@ -149,7 +149,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/es-status-daemon.sh" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/es-status-daemon.service" 2>/dev/null
 
-  echo "== 注入 zram 服务脚本 =="
+  echo "== Injecting the zram service script =="
   safe sudo cp -f ./bin/zram-service/zram-setup.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/zram-service/zram-swap.service "$MOUNT_DIR/root/etc/systemd/system/"
   safe sudo cp -f ./bin/zram-service/zram.conf "$MOUNT_DIR/root/etc/"
@@ -160,7 +160,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/zram-swap.service" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/zram.conf" 2>/dev/null
 
-  echo "== 注入 batteryplus 服务脚本 =="
+  echo "== Injecting the batteryplus service script =="
   safe sudo cp -f ./bin/batteryplus-service/batteryplus "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/batteryplus-service/batteryplus.service "$MOUNT_DIR/root/etc/systemd/system/"
   sudo mkdir -p "$MOUNT_DIR/root/etc/batteryplus/"
@@ -172,17 +172,17 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/batteryplus.service" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/batteryplus/batteryplus.conf" 2>/dev/null
 
-  echo "== 添加 Gamma =="
+  echo "== Adding Gamma =="
   safe sudo cp -a ./replace_file/gamma/gamma "$MOUNT_DIR/usr/local/bin/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/usr/local/bin/gamma" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/usr/local/bin/gamma" 2>/dev/null
 
-  echo "== 添加 Gamma =="
+  echo "== Adding Gamma =="
   safe sudo cp -a ./replace_file/gamma/gamma "$MOUNT_DIR/usr/local/bin/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/usr/local/bin/gamma" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/usr/local/bin/gamma" 2>/dev/null
 
-  echo "== 注入核心 =="
+  echo "== Injecting cores =="
   safe sudo cp -f ./mod_so/64/* "$MOUNT_DIR/root/home/ark/.config/retroarch/cores/"
   safe sudo cp -f ./mod_so/32/* "$MOUNT_DIR/root/home/ark/.config/retroarch32/cores/"
   safe sudo chown -R $CHOWN_USER $MOUNT_DIR/root/home/ark/.config/retroarch/cores/*
@@ -190,7 +190,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod -R 777 $MOUNT_DIR/root/home/ark/.config/retroarch/cores/*
   safe sudo chmod -R 777 $MOUNT_DIR/root/home/ark/.config/retroarch32/cores/*
 
-  echo "== 注入 dArkOS 主题配置 =="
+  echo "== Injecting the dArkOS theme configuration =="
   safe sudo cp -f ./replace_file/darkos4es_systems.cfg "$MOUNT_DIR/root/etc/emulationstation/es_systems.cfg"
   safe sudo cp -f ./replace_file/darkos4es_systems.cfg.sd1 "$MOUNT_DIR/root/etc/emulationstation/es_systems.cfg.sd1"
   safe sudo cp -f ./replace_file/darkos4es_systems.cfg.sd2 "$MOUNT_DIR/root/etc/emulationstation/es_systems.cfg.sd2"
@@ -211,14 +211,14 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/bin/emulationstation/emulationstation"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/bin/emulationstation/emulationstation"
 
-  echo "== 还原 drastic =="
+  echo "== Restoring drastic =="
   safe sudo rm -rf "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo cp -a ./replace_file/drastic/. "$MOUNT_DIR/root/opt/drastic/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
 
-  echo "== 添加 drastic-kk =="
+  echo "== Adding drastic-kk =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/drastic-kk" 2>/dev/null
   safe sudo cp -a ./replace_file/drastic-kk/. "$MOUNT_DIR/root/opt/drastic-kk/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/drastic-kk" 2>/dev/null
@@ -227,43 +227,43 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/aarch64-linux-gnu/libjson-c.so"* 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/aarch64-linux-gnu/libjson-c.so"* 2>/dev/null
 
-  echo "== 添加 onscripter-sa =="
+  echo "== Adding onscripter-sa =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
   safe sudo cp -a ./replace_file/onscripter/. "$MOUNT_DIR/root/opt/onscripter/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
 
-  echo "== 添加 freej2me-sa =="
+  echo "== Adding freej2me-sa =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
   safe sudo cp -a ./replace_file/freej2mesa/. "$MOUNT_DIR/root/opt/freej2mesa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
 
-  echo "== 改用自适应分辨率 Retroarch 1.22.2 =="
+  echo "== Switching to adaptive-resolution Retroarch 1.22.2 =="
   safe sudo cp -a ./replace_file/retroarch/retroarch "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo cp -a ./replace_file/retroarch/retroarch32 "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
 
-  echo "== 更新和添加 flycastsa =="
+  echo "== Updating and adding flycastsa =="
   safe sudo cp -a ./replace_file/flycastsa/. "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
 
-  echo "== 添加 ruffle-sa  =="
+  echo "== Adding ruffle-sa  =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
   safe sudo cp -a ./replace_file/rufflesa/. "$MOUNT_DIR/root/opt/rufflesa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
 
-  echo "== 更新和添加 yabasanshiro-sa =="
+  echo "== Updating and adding yabasanshiro-sa =="
   safe sudo cp -a ./replace_file/yabasanshiro/. "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
 
-  echo "== 处理 roms.tar =="
+  echo "== Processing roms.tar =="
   if [ "$(stat -c%s $MOUNT_DIR/root/roms.tar 2>/dev/null || echo 0)" -le $((100*1024*1024)) ]; then
-    echo "== 复制 roms.tar 出来操作 =="
+    echo "== Copying roms.tar out to work on it =="
     safe sudo cp "$MOUNT_DIR/root/roms.tar" "$WORK_DIR/"
     safe sudo mkdir -p "$WORK_DIR/tmproms"
     tar -xf "$WORK_DIR/roms.tar" -C "$WORK_DIR/tmproms"
@@ -275,7 +275,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
     safe sudo mv "$WORK_DIR/tmproms/roms/j2me/zulu11.48.21-ca-jdk11.0.11-linux_aarch64" "$WORK_DIR/tmproms/roms/j2me/jdk"
     safe sudo chown -R root:root "$WORK_DIR/tmproms/roms/j2me/jdk"
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/j2me/jdk"
-    echo "== 注入 portmaster =="
+    echo "== Injecting portmaster =="
     safe sudo mkdir -p "$WORK_DIR/tmproms/roms/tools/PortMaster/"
     safe sudo cp -rf ./PortMaster/* "$WORK_DIR/tmproms/roms/tools/PortMaster/"
     safe sudo cp -rf ./bin/pm_libs/* "$WORK_DIR/tmproms/roms/tools/PortMaster/libs"
@@ -285,7 +285,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/tools/PortMaster"
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/tools/PortMaster.sh"
     safe sudo mkdir -p "$WORK_DIR/tmproms/roms/pymo"
-    echo "== 注入 pymo 主题 =="
+    echo "== Injecting the pymo theme =="
     safe sudo mkdir -p "$WORK_DIR/mnt/roms/themes/es-theme-nes-box/pymo"
     safe sudo mkdir -p "$WORK_DIR/tmproms/roms/themes/es-theme-nes-box/pymo"
     safe sudo cp -r ./replace_file/pymo/pymo/* "$WORK_DIR/mnt/roms/themes/es-theme-nes-box/pymo"
@@ -304,10 +304,10 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
     safe sudo chmod -R 777 $MOUNT_DIR/root/roms.tar
     safe sudo rm -rf "$WORK_DIR/roms.tar"
   else
-    echo "== 跳过 roms.tar 操作 =="
+    echo "== Skipping the roms.tar step =="
   fi
 
-  echo "== 调整retrorun =="
+  echo "== Adjusting retrorun =="
   safe sudo cp -r ./replace_file/retrorun/* "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/retrorun32"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/retrorun"
@@ -318,7 +318,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/retrorunsdl32"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/retrorunsdl"
 
-  echo "== 注入pymo =="
+  echo "== Injecting pymo =="
   safe sudo cp -r ./replace_file/pymo/cpymo "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -r ./replace_file/pymo/pymo.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/cpymo"
@@ -326,7 +326,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/cpymo"
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/pymo.sh"
 
-  echo "== ogage快捷键复制 =="
+  echo "== Copying ogage hotkey config =="
   safe sudo cp -r ./replace_file/ogage "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -r ./replace_file/ogage "$MOUNT_DIR/root/home/ark/.quirks/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/ogage"
@@ -334,7 +334,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/ogage"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/home/ark/.quirks/ogage"
 
-  echo "== service的调整 =="
+  echo "== Adjusting services =="
   safe sudo cp -r ./replace_file/services/351mp.service "$MOUNT_DIR/root/etc/systemd/system/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/etc/systemd/system/351mp.service" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/351mp.service" 2>/dev/null
@@ -349,7 +349,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/"*.sh 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/"*.sh 2>/dev/null
 
-  echo "== 删除不需要的文件 =="
+  echo "== Removing unneeded files =="
   safe sudo rm -rf "$MOUNT_DIR/boot/BMPs" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/boot/ScreenFiles" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/boot/boot.ini" $MOUNT_DIR/boot/*.dtb $MOUNT_DIR/boot/*.orig $MOUNT_DIR/boot/*.tony $MOUNT_DIR/boot/Image $MOUNT_DIR/boot/*.bmp $MOUNT_DIR/boot/WHERE_ARE_MY_ROMS.txt 2>/dev/null
@@ -369,7 +369,7 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Advanced/Reset EmulationStation Controls.sh" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Advanced/Fix Global Hotkeys.sh" 2>/dev/null
 
-  echo "== 注入 dArkOS 工具 =="
+  echo "== Injecting dArkOS tools =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/system/Tools/"
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Advanced/Backup dArkOS Settings" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Tools/Install.PortMaster.sh" 2>/dev/null
@@ -385,28 +385,28 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/Tools/"*.sh
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/Advanced/"*.sh
 
-  echo "== 设置 dArkOS plymouth 标题 =="
+  echo "== Setting the dArkOS plymouth title =="
   safe sudo sed -i "/title\=/c\title\=dArkOS4Clone ($UPDATE_DATE)($MODDER)" "$MOUNT_DIR/root/usr/share/plymouth/themes/text.plymouth"
 
 else
   # ============================================================
-  # ArkOS 专用逻辑 (UID=1002)
+  # ArkOS-specific logic (UID=1002)
   # ============================================================
-  echo "=== 检测到 ArkOS 镜像，执行 ArkOS 专用注入 ==="
+  echo "=== ArkOS image detected, running the ArkOS-specific injection ==="
   CHOWN_USER="1002:1002"
 
-  echo "== 注入 boot =="
+  echo "== Injecting boot =="
   safe sudo mkdir -p "$MOUNT_DIR/boot/consoles"
   sudo rsync $RSYNC_BOOT_OPTS --exclude='files' ./consoles/ "$MOUNT_DIR/boot/consoles/"
   safe sudo rm -rf "$MOUNT_DIR/boot/consoles/logo-darkos"
   safe sudo cp -f ./sh/clone.sh ./dtb_selector_macos ./dtb_selector_linux32 ./dtb_selector_win32.exe ./sh/expandtoexfat.sh "$MOUNT_DIR/boot/"
 
-  echo "== 注入按键信息 =="
+  echo "== Injecting button mapping info =="
   safe sudo mkdir -p "$MOUNT_DIR/root/home/ark/.quirks"
   safe sudo cp -r ./consoles/files/* "$MOUNT_DIR/root/home/ark/.quirks/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/home/ark/.quirks/"
 
-  echo "== 注入 clone 用配置 =="
+  echo "== Injecting clone configuration =="
   safe sudo mkdir -p "$MOUNT_DIR/root/usr/bin"
   safe sudo cp -f ./bin/mcu_led ./bin/ws2812 "$MOUNT_DIR/root/usr/bin/"
   safe sudo cp -f ./bin/sdljoymap ./bin/sdljoytest "$MOUNT_DIR/root/usr/local/bin/"
@@ -418,7 +418,7 @@ else
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/console_detect"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/bin/mcu_led" "$MOUNT_DIR/root/usr/bin/ws2812" "$MOUNT_DIR/root/usr/local/bin/sdljoytest" "$MOUNT_DIR/root/usr/local/bin/sdljoymap" "$MOUNT_DIR/root/usr/local/bin/console_detect"
 
-  echo "== 替换 modules (root) =="
+  echo "== Replacing modules (root) =="
   SRC="./replace_file/modules"
   DST="$MOUNT_DIR/root/usr/lib/modules"
   if [[ -d "$SRC" ]]; then
@@ -431,35 +431,35 @@ else
   fi
   safe sudo depmod -a -b "$MOUNT_DIR/root" 4.4.189 2>/dev/null
 
-  echo "== 注入 915 固件 =="
+  echo "== Injecting 915 firmware =="
   safe sudo cp -f ./bin/rk915/rk915_*.bin "$MOUNT_DIR/root/usr/lib/firmware/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/"rk915_*.bin 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/"rk915_*.bin 2>/dev/null
 
-  echo "== 注入 swt6621s 固件 =="
+  echo "== Injecting swt6621s firmware =="
   safe sudo cp -f ./bin/swt6621s/* "$MOUNT_DIR/root/usr/lib/firmware/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/"SWT6621S_*.bin 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/"SWT6621S_*.bin 2>/dev/null
 
-  echo "== 注入 aic8800DC 固件 =="
+  echo "== Injecting aic8800DC firmware =="
   safe sudo mkdir -p "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC"
   safe sudo cp -f ./bin/aic8800DC/* "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/firmware/aic8800DC" 2>/dev/null
 
-  echo "== 注入 351 系列手柄伪装规则  =="
+  echo "== Injecting 351-series gamepad spoofing rules  =="
   safe sudo cp -f ./bin/99-odroidgo3.rules "$MOUNT_DIR/root/etc/udev/rules.d" 2>/dev/null
 
-  echo "== 注入 351Files 自适应 =="
+  echo "== Injecting the adaptive 351Files build =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/351Files/res"
   safe sudo cp -r ./replace_file/351Files/. "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/351Files/" 2>/dev/null
 
-  echo "== 更新 usb-modeswitch-data =="
+  echo "== Updating usb-modeswitch-data =="
   safe sudo cp -a ./bin/usb-modeswitch-data/* "$MOUNT_DIR/root/" 2>/dev/null
 
-  echo "== 注入 ArkOS 启动脚本 =="
+  echo "== Injecting ArkOS startup scripts =="
   safe sudo cp -f ./replace_file/atomiswave.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./replace_file/dreamcast.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./replace_file/naomi.sh "$MOUNT_DIR/root/usr/local/bin/"
@@ -518,7 +518,7 @@ else
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/mediaplayer.sh" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/get_last_played.sh" 2>/dev/null
 
-  echo "== 注入 es-service 服务脚本 =="
+  echo "== Injecting the es-service service script =="
   safe sudo cp -f ./bin/es-service/es-status-daemon.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/es-service/es-status-daemon.service "$MOUNT_DIR/root/etc/systemd/system/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/es-status-daemon.sh" 2>/dev/null
@@ -526,7 +526,7 @@ else
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/es-status-daemon.sh" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/es-status-daemon.service" 2>/dev/null
 
-  echo "== 注入 zram 服务脚本 =="
+  echo "== Injecting the zram service script =="
   safe sudo cp -f ./bin/zram-service/zram-setup.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/zram-service/zram-swap.service "$MOUNT_DIR/root/etc/systemd/system/"
   safe sudo cp -f ./bin/zram-service/zram.conf "$MOUNT_DIR/root/etc/"
@@ -537,7 +537,7 @@ else
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/zram-swap.service" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/zram.conf" 2>/dev/null
 
-  echo "== 注入 batteryplus 服务脚本 =="
+  echo "== Injecting the batteryplus service script =="
   safe sudo cp -f ./bin/batteryplus-service/batteryplus "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -f ./bin/batteryplus-service/batteryplus.service "$MOUNT_DIR/root/etc/systemd/system/"
   sudo mkdir -p "$MOUNT_DIR/root/etc/batteryplus/"
@@ -549,7 +549,7 @@ else
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/systemd/system/batteryplus.service" 2>/dev/null
   safe sudo chmod 777 "$MOUNT_DIR/root/etc/batteryplus/batteryplus.conf" 2>/dev/null
 
-  echo "== 注入核心 =="
+  echo "== Injecting cores =="
   safe sudo cp -f ./mod_so/64/* "$MOUNT_DIR/root/home/ark/.config/retroarch/cores/"
   safe sudo cp -f ./mod_so/arkos_64/* "$MOUNT_DIR/root/home/ark/.config/retroarch/cores/"
   safe sudo cp -f ./mod_so/32/* "$MOUNT_DIR/root/home/ark/.config/retroarch32/cores/"
@@ -559,7 +559,7 @@ else
   safe sudo chmod -R 777 $MOUNT_DIR/root/home/ark/.config/retroarch/cores/*
   safe sudo chmod -R 777 $MOUNT_DIR/root/home/ark/.config/retroarch32/cores/*
 
-  echo "== 注入 ArkOS 主题配置 =="
+  echo "== Injecting the ArkOS theme configuration =="
   safe sudo cp -f ./replace_file/es_systems.cfg "$MOUNT_DIR/root/etc/emulationstation/"
   safe sudo cp -f ./replace_file/es_systems.cfg.sd1 "$MOUNT_DIR/root/etc/emulationstation/"
   safe sudo cp -f ./replace_file/es_systems.cfg.sd2 "$MOUNT_DIR/root/etc/emulationstation/"
@@ -580,14 +580,14 @@ else
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/bin/emulationstation/emulationstation"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/bin/emulationstation/emulationstation"
 
-  echo "== 还原 drastic =="
+  echo "== Restoring drastic =="
   safe sudo rm -rf "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo cp -a ./replace_file/drastic/. "$MOUNT_DIR/root/opt/drastic/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/drastic" 2>/dev/null
 
-  echo "== 添加 drastic-kk =="
+  echo "== Adding drastic-kk =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/drastic-kk" 2>/dev/null
   safe sudo cp -a ./replace_file/drastic-kk/. "$MOUNT_DIR/root/opt/drastic-kk/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/drastic-kk" 2>/dev/null
@@ -596,83 +596,83 @@ else
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/lib/aarch64-linux-gnu/libjson-c.so"* 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/lib/aarch64-linux-gnu/libjson-c.so"* 2>/dev/null
 
-  echo "== 添加 DSperate-sa =="
+  echo "== Adding DSperate-sa =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/DSperate" 2>/dev/null
   safe sudo cp -a ./replace_file/DSperate/. "$MOUNT_DIR/root/opt/DSperate/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/DSperate" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/DSperate" 2>/dev/null
 
-  echo "== 添加 onscripter-sa =="
+  echo "== Adding onscripter-sa =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
   safe sudo cp -a ./replace_file/onscripter/. "$MOUNT_DIR/root/opt/onscripter/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/onscripter" 2>/dev/null
 
-  echo "== 添加 freej2me-sa =="
+  echo "== Adding freej2me-sa =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
   safe sudo cp -a ./replace_file/freej2mesa/. "$MOUNT_DIR/root/opt/freej2mesa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/freej2mesa" 2>/dev/null
 
-  echo "== 改用自适应分辨率 Retroarch 1.22.2 =="
+  echo "== Switching to adaptive-resolution Retroarch 1.22.2 =="
   safe sudo cp -a ./replace_file/retroarch/retroarch "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo cp -a ./replace_file/retroarch/retroarch32 "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/retroarch/bin/" 2>/dev/null
 
-  echo "== 更新 Fake08-sa =="
+  echo "== Updating Fake08-sa =="
   safe sudo cp -a ./replace_file/fake08/* "$MOUNT_DIR/root/opt/fake08/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/fake08/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/fake08/" 2>/dev/null
 
-  echo "== 更新 PPSSPP 1.20.4 =="
+  echo "== Updating PPSSPP 1.20.4 =="
   safe sudo cp -a ./replace_file/ppsspp/* "$MOUNT_DIR/root/opt/ppsspp/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/ppsspp/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/ppsspp/" 2>/dev/null
 
-  echo "== 替换 PPSSPP-2021 =="
+  echo "== Replacing PPSSPP-2021 =="
   safe sudo cp -a ./replace_file/ppsspp-2021/* "$MOUNT_DIR/root/opt/ppsspp-2021/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/ppsspp-2021/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/ppsspp-2021/" 2>/dev/null
 
-  echo "== 更新 mupen64plus =="
+  echo "== Updating mupen64plus =="
   safe sudo cp -a ./replace_file/mupen64plus/* "$MOUNT_DIR/root/opt/mupen64plus/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/mupen64plus/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/mupen64plus/" 2>/dev/null
 
-  echo "== 更新 ScummVM v2026.3.0 =="
+  echo "== Updating ScummVM v2026.3.0 =="
   safe sudo cp -a ./replace_file/scummvm/* "$MOUNT_DIR/root/opt/scummvm/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/scummvm/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/scummvm/" 2>/dev/null
 
-  echo "== 更新和添加 flycastsa =="
+  echo "== Updating and adding flycastsa =="
   safe sudo cp -a ./replace_file/flycastsa/. "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/flycastsa/" 2>/dev/null
 
-  echo "== 更新 duckstation =="
+  echo "== Updating duckstation =="
   safe sudo cp -a ./replace_file/duckstation/. "$MOUNT_DIR/root/opt/duckstation/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/duckstation/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/duckstation/" 2>/dev/null
 
-  echo "== 添加 gametank-sa  =="
+  echo "== Adding gametank-sa  =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/gametank" 2>/dev/null
   safe sudo cp -a ./replace_file/gametank/. "$MOUNT_DIR/root/opt/gametank/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/gametank" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/gametank" 2>/dev/null
 
-  echo "== 添加 ruffle-sa  =="
+  echo "== Adding ruffle-sa  =="
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
   safe sudo cp -a ./replace_file/rufflesa/. "$MOUNT_DIR/root/opt/rufflesa/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/rufflesa" 2>/dev/null
 
-  echo "== 更新和添加 yabasanshiro-sa =="
+  echo "== Updating and adding yabasanshiro-sa =="
   safe sudo cp -a ./replace_file/yabasanshiro/. "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/yabasanshiro/" 2>/dev/null
 
-  echo "== 更新 OpenborFF =="
+  echo "== Updating OpenborFF =="
   safe sudo cp -a ./replace_file/OpenBor/. "$MOUNT_DIR/root/opt/OpenBor/" 2>/dev/null
   safe sudo mkdir -p "$MOUNT_DIR/root/opt/OpenBorFF" 2>/dev/null
   safe sudo cp -a ./replace_file/OpenBorFF/. "$MOUNT_DIR/root/opt/OpenBorFF/" 2>/dev/null
@@ -681,14 +681,14 @@ else
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/OpenBor/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/OpenBor/" 2>/dev/null
 
-  echo "== 添加 krkr2 =="
+  echo "== Adding krkr2 =="
   safe sudo cp -a ./replace_file/krkr2/. "$MOUNT_DIR/root/opt/krkr2/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/opt/krkr2/" 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/krkr2/" 2>/dev/null
 
-  echo "== 处理 roms.tar =="
+  echo "== Processing roms.tar =="
   if [ "$(stat -c%s $MOUNT_DIR/root/roms.tar 2>/dev/null || echo 0)" -le $((100*1024*1024)) ]; then
-    echo "== 复制 roms.tar 出来操作 =="
+    echo "== Copying roms.tar out to work on it =="
     safe sudo cp "$MOUNT_DIR/root/roms.tar" "$WORK_DIR/"
     mkdir -p "$WORK_DIR/tmproms"
     tar -xf "$WORK_DIR/roms.tar" -C "$WORK_DIR/tmproms"
@@ -704,7 +704,7 @@ else
     safe sudo mv "$WORK_DIR/tmproms/roms/j2me/zulu11.48.21-ca-jdk11.0.11-linux_aarch64" "$WORK_DIR/tmproms/roms/j2me/jdk"
     safe sudo chown -R root:root "$WORK_DIR/tmproms/roms/j2me/jdk"
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/j2me/jdk"
-    echo "== 注入 portmaster =="
+    echo "== Injecting portmaster =="
     safe sudo mkdir -p "$WORK_DIR/tmproms/roms/tools/PortMaster/"
     safe sudo cp -rf ./PortMaster/* "$WORK_DIR/tmproms/roms/tools/PortMaster/"
     safe sudo cp -rf ./bin/pm_libs/* "$WORK_DIR/tmproms/roms/tools/PortMaster/libs"
@@ -713,7 +713,7 @@ else
     safe sudo chown -R $CHOWN_USER "$WORK_DIR/tmproms/roms/tools/PortMaster.sh"
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/tools/PortMaster"
     safe sudo chmod -R 777 "$WORK_DIR/tmproms/roms/tools/PortMaster.sh"
-    echo "== 注入 pymo 主题 =="
+    echo "== Injecting the pymo theme =="
     safe sudo cp -r ./replace_file/pymo/pymo "$MOUNT_DIR/root/tempthemes/es-theme-nes-box/"
     safe sudo chown -R root:root "$MOUNT_DIR/root/tempthemes/es-theme-nes-box/pymo"
     safe sudo chmod -R 777 "$MOUNT_DIR/root/tempthemes/es-theme-nes-box/pymo"
@@ -726,10 +726,10 @@ else
     safe sudo chmod -R 777 $MOUNT_DIR/root/roms.tar
     safe sudo rm -rf "$WORK_DIR/roms.tar"
   else
-    echo "== 跳过 roms.tar 操作 =="
+    echo "== Skipping the roms.tar step =="
   fi
 
-  echo "== 调整retrorun =="
+  echo "== Adjusting retrorun =="
   safe sudo cp -r ./replace_file/retrorun/* "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/retrorun32"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/retrorun"
@@ -740,7 +740,7 @@ else
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/retrorunsdl32"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/retrorunsdl"
 
-  echo "== 注入pymo =="
+  echo "== Injecting pymo =="
   safe sudo cp -r ./replace_file/pymo/cpymo "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -r ./replace_file/pymo/pymo.sh "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/cpymo"
@@ -748,7 +748,7 @@ else
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/cpymo"
   safe sudo chmod 777 "$MOUNT_DIR/root/usr/local/bin/pymo.sh"
 
-  echo "== ogage快捷键复制 =="
+  echo "== Copying ogage hotkey config =="
   safe sudo cp -r ./replace_file/ogage "$MOUNT_DIR/root/usr/local/bin/"
   safe sudo cp -r ./replace_file/ogage "$MOUNT_DIR/root/home/ark/.quirks/"
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/usr/local/bin/ogage"
@@ -756,7 +756,7 @@ else
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/ogage"
   safe sudo chmod -R 777 "$MOUNT_DIR/root/home/ark/.quirks/ogage"
 
-  echo "== service的调整 =="
+  echo "== Adjusting services =="
   safe sudo cp -r ./replace_file/services/351mp.service "$MOUNT_DIR/root/etc/systemd/system/" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/etc/systemd/system/351mp.service" 2>/dev/null
   safe sudo chown -R $CHOWN_USER "$MOUNT_DIR/root/lib/systemd/system/mpv.service" 2>/dev/null
@@ -774,11 +774,11 @@ else
   safe sudo chmod -R 777 "$MOUNT_DIR/root/usr/local/bin/"*.sh 2>/dev/null
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/"*.sh 2>/dev/null
 
-  echo "== 删除logo随机 =="
+  echo "== Removing the random logo selection =="
   safe sudo sed -i '/imageshift\.sh/d' "$MOUNT_DIR/root/var/spool/cron/crontabs/root" 2>/dev/null
   safe sudo rm "$MOUNT_DIR/root/home/ark/.config/imageshift.sh" 2>/dev/null
 
-  echo "== 删除不需要的文件 =="
+  echo "== Removing unneeded files =="
   safe sudo rm -rf "$MOUNT_DIR/boot/BMPs" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/boot/ScreenFiles" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/boot/boot.ini" $MOUNT_DIR/boot/*.dtb $MOUNT_DIR/boot/*.orig $MOUNT_DIR/boot/*.tony $MOUNT_DIR/boot/Image $MOUNT_DIR/boot/*.bmp $MOUNT_DIR/boot/WHERE_ARE_MY_ROMS.txt 2>/dev/null
@@ -805,7 +805,7 @@ else
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Advanced/Reset EmulationStation Controls.sh" 2>/dev/null
   safe sudo rm -rf "$MOUNT_DIR/root/opt/system/Advanced/Fix Global Hotkeys.sh" 2>/dev/null
 
-  echo "== 注入工具 =="
+  echo "== Injecting tools =="
   safe sudo cp -r "./Jason3_Scripte/wifi-toggle/Wifi-toggle.sh" "$MOUNT_DIR/root/opt/system/Wifi-Toggle.sh"
   safe sudo cp -r "./Jason3_Scripte/InfoSystem/InfoSystem.sh" "$MOUNT_DIR/root/opt/system/Tools/System Info.sh"
   safe sudo cp -r "./Jason3_Scripte/GhostLoader/GhostLoader.sh" "$MOUNT_DIR/root/opt/system/Tools/Ghost Loader.sh"
@@ -818,10 +818,10 @@ else
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/Tools/"*.sh
   safe sudo chmod -R 777 "$MOUNT_DIR/root/opt/system/Advanced/"*.sh
 
-  echo "== 设置 ArkOS plymouth 标题 =="
+  echo "== Setting the ArkOS plymouth title =="
   safe sudo sed -i "/title\=/c\title\=ArkOS4Clone ($UPDATE_DATE)($MODDER)" "$MOUNT_DIR/root/usr/share/plymouth/themes/text.plymouth"
 fi
 
 safe sudo touch $MOUNT_DIR/boot/"USE_DTB_SELECT_TO_SELECT_DEVICE" 2>/dev/null
 cat $MOUNT_DIR/root/usr/share/plymouth/themes/text.plymouth
-echo "== 完成 =="
+echo "== Done =="

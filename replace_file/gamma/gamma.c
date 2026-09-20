@@ -20,7 +20,7 @@
 #define MAX_GAMMA 2.0f
 #define MAX_GAMMA_16BIT 65535
 
-// 读取状态文件：尝试读取三个值（R,G,B），若失败则回退到单一值
+// Read the state file: try to read three values (R,G,B); if that fails, fall back to a single value
 void read_current_gamma_from_file(float *r, float *g, float *b) {
     FILE *fp = fopen(STATE_FILE, "r");
     if (!fp) {
@@ -30,7 +30,7 @@ void read_current_gamma_from_file(float *r, float *g, float *b) {
     int n = fscanf(fp, "%f %f %f", r, g, b);
     fclose(fp);
     if (n == 3) {
-        // 钳位
+        // Clamp
         if (*r < MIN_GAMMA) *r = MIN_GAMMA;
         if (*r > MAX_GAMMA) *r = MAX_GAMMA;
         if (*g < MIN_GAMMA) *g = MIN_GAMMA;
@@ -38,7 +38,7 @@ void read_current_gamma_from_file(float *r, float *g, float *b) {
         if (*b < MIN_GAMMA) *b = MIN_GAMMA;
         if (*b > MAX_GAMMA) *b = MAX_GAMMA;
     } else {
-        // 回退：只读一个数
+        // Fallback: read only one number
         float val;
         fp = fopen(STATE_FILE, "r");
         if (!fp) {
@@ -136,9 +136,9 @@ int main(int argc, char *argv[]) {
     int rgb_flags = 0;
     int opt;
 
-    // ===== 处理无参数（查询硬件当前值） =====
+    // ===== Handle no arguments (query the current hardware values) =====
     if (argc == 1) {
-        // 打开设备并获取资源
+        // Open the device and get its resources
         fd = open("/dev/dri/card0", O_RDWR);
         if (fd < 0) {
             fprintf(stderr, "Failed to open DRM device: %s\n", strerror(errno));
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
             close(fd);
             return 1;
         }
-        // 找第一个活动的连接器对应的 CRTC
+        // Find the CRTC of the first active connector
         int found = 0;
         for (int i = 0; i < resources->count_connectors; i++) {
             drmModeConnector *conn = drmModeGetConnector(fd, resources->connectors[i]);
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
         drmModeFreeConnector(conn);
     }
     if (!found) {
-        // 保底用第一个
+        // Fall back to the first one
         crtc_id = resources->crtcs[0];
     }
 
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
     gamma_size = crtc->gamma_size;
         if (gamma_size <= 0) gamma_size = 256;
 
-        // 分配内存并读取硬件 gamma 表
+        // Allocate memory and read the hardware gamma table
         red_table = calloc(gamma_size, sizeof(uint16_t));
         green_table = calloc(gamma_size, sizeof(uint16_t));
         blue_table = calloc(gamma_size, sizeof(uint16_t));
@@ -204,19 +204,19 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-        // 从表中提取中间点的值（代表等效 gamma）
+        // Extract the midpoint value from the table (it represents the equivalent gamma)
         int mid = gamma_size / 2;
         double r = red_table[mid] / (double)MAX_GAMMA_16BIT;
         double g = green_table[mid] / (double)MAX_GAMMA_16BIT;
         double b = blue_table[mid] / (double)MAX_GAMMA_16BIT;
-        // 反推等效 gamma：gamma = log(0.5) / log(value) ，但 value 为 0.5 时 gamma=1
-        // 简单方法：直接显示三个通道在中间点的归一化值，并计算平均值。
+        // Derive the equivalent gamma: gamma = log(0.5) / log(value), but when value is 0.5, gamma = 1
+        // Simple approach: just show the normalized midpoint value of the three channels and compute the average.
         double avg = (r + g + b) / 3.0;
-        // 为了更直观，我们可以拟合 gamma，但直接显示归一化值更透明。
+        // We could fit the gamma for a more intuitive result, but showing the normalized values directly is more transparent.
         printf("Hardware gamma table (%d entries) at 50%% input:\n", gamma_size);
         printf("  R=%.3f  G=%.3f  B=%.3f\n", r, g, b);
-        printf("  Equivalent average gamma ≈ %.2f\n", 1.0 / (log(avg) / log(0.5))); // 仅当 avg>0
-        // 与状态文件对比
+        printf("  Equivalent average gamma ≈ %.2f\n", 1.0 / (log(avg) / log(0.5))); // only when avg > 0
+        // Compare against the state file
         float fr, fg, fb;
         read_current_gamma_from_file(&fr, &fg, &fb);
         printf("State file: R=%.2f G=%.2f B=%.2f\n", fr, fg, fb);
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    // ===== 处理单参数特殊指令（重置、增量） =====
+    // ===== Handle special single-argument commands (reset, increment) =====
     if (argc == 2) {
         char *arg = argv[1];
         if (strcmp(arg, "-R") == 0 || strcmp(arg, "--reset") == 0) {
@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
             mode = 's';
             save_current_gamma_rgb(1.0f, 1.0f, 1.0f);
             printf("Gamma reset to 1.0 (will apply after DRM setup)\n");
-            // 继续执行后面的应用逻辑
+            // Continue with the apply logic below
             goto apply_gamma;
         }
         if ((arg[0] == '+' || arg[0] == '-') && strlen(arg) > 1) {
@@ -260,10 +260,10 @@ int main(int argc, char *argv[]) {
                    gamma_r, gamma_g, gamma_b, delta);
             goto apply_gamma;
         }
-        // 其他情况（如 -r 单独出现）会进入 getopt，后面报错
+        // Other cases (such as -r on its own) fall through to getopt and error out later
     }
 
-    // ===== getopt 解析 =====
+    // ===== getopt parsing =====
     optind = 1;
     while ((opt = getopt(argc, argv, "s:r:g:b:")) != -1) {
         switch (opt) {
@@ -298,7 +298,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // ===== 参数校验 =====
+    // ===== Argument validation =====
     if (mode == 0) {
         fprintf(stderr, "Error: No valid mode specified\n");
         print_usage(argv[0]);
@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) {
     }
 
 apply_gamma:
-    // ===== 打开 DRM 设备并应用 =====
+    // ===== Open the DRM device and apply =====
     fd = open("/dev/dri/card0", O_RDWR);
     if (fd < 0) {
         fprintf(stderr, "Failed to open DRM device: %s\n", strerror(errno));
@@ -338,7 +338,7 @@ apply_gamma:
         return 1;
     }
 
-    // 找活动的连接器对应的 CRTC
+    // Find the CRTC of the active connector
     int found = 0;
     for (int i = 0; i < resources->count_connectors; i++) {
         drmModeConnector *conn = drmModeGetConnector(fd, resources->connectors[i]);
@@ -390,7 +390,7 @@ apply_gamma:
         return 1;
     }
 
-    // 如果是 -s/-c 模式，保存状态文件
+    // In -s/-c mode, save the state file
     if (mode == 's' || mode == 'c') {
         save_current_gamma_rgb(gamma_r, gamma_g, gamma_b);
     }

@@ -2,550 +2,550 @@
 <gameList>
 	<folder>
 		<path>./Advanced</path>
-		<name>高级功能</name>
+		<name>Advanced</name>
 	</folder>
 	<folder>
 		<path>./Clone</path>
-		<name>克隆设备专用脚本</name>
+		<name>Clone Device Scripts</name>
 	</folder>
 	<folder>
 		<path>./DeviceType</path>
-		<name>机器类型</name>
+		<name>Device Type</name>
 	</folder>
 	<folder>
 		<path>./Advanced/NDS Overlays</path>
-		<name>NDS遮罩管理</name>
+		<name>NDS Overlays</name>
 	</folder>
 	<folder>
 		<path>./Advanced/Video Boot</path>
-		<name>开机启动视频</name>
+		<name>Boot Video</name>
 	</folder>
 	<folder>
 		<path>./Tools</path>
-		<name>工具软件</name>
+		<name>Tools</name>
 	</folder>
 	<folder>
 		<path>./Tools/Gamma</path>
-		<name>Gamma值调整</name>
+		<name>Gamma Adjustment</name>
 	</folder>
 	<folder>
 		<path>./Tools/Gamma/Adjust Gamma (temporary)</path>
-		<name>临时设置gamma值</name>
+		<name>Adjust Gamma (temporary)</name>
 	</folder>
 	<game>
 		<path>./Tools/Gamma/Set Panel1.sh</path>
-		<name>Panel1屏幕推荐值设置</name>
+		<name>Panel1 Recommended Settings</name>
 	</game>
 	<game>
 		<path>./Tools/Gamma/Set Panel4.sh</path>
-		<name>Panel4屏幕推荐值设置</name>
+		<name>Panel4 Recommended Settings</name>
 	</game>
 	<game>
 		<path>./Tools/Gamma/Enable Gamma Correction.sh</path>
-		<name>开启gamma修改</name>
+		<name>Enable Gamma Correction</name>
 	</game>
 	<game>
 		<path>./Tools/Gamma/Disable Gamma Correction.sh</path>
-		<name>关闭gamma修改</name>
+		<name>Disable Gamma Correction</name>
 	</game>
 	<game>
 		<path>./Tools/Gamma/View Test Images.sh</path>
-		<name>查看测试图</name>
+		<name>View Test Images</name>
 	</game>
 	<game>
 		<path>./Tools/ES Logo Changer.sh</path>
-		<name>改变ES Logo</name>
+		<name>Change ES Logo</name>
 	</game>
 	<game>
 		<path>./Tools/Plymouth Theme Changer.sh</path>
-		<name>改变主题</name>
+		<name>Change Plymouth Theme</name>
 	</game>
 	<game>
 		<path>./Tools/ThemeMaster.sh</path>
-		<name>主题大师</name>
+		<name>ThemeMaster</name>
 	</game>
 	<game>
 		<path>./Tools/PortMaster.sh</path>
-		<name>进入PM</name>
+		<name>Open PortMaster</name>
 	</game>
 	<game>
 		<path>./Tools/ArkManager.sh</path>
-		<name>Arkos工具合集</name>
+		<name>ArkOS Tools</name>
 	</game>
 	<game>
 		<path>./Tools/Ghost Loader.sh</path>
-		<name>主题配置</name>
+		<name>Theme Config (Ghost Loader)</name>
 	</game>
 	<game>
 		<path>./Tools/Session Recall.sh</path>
-		<name>存档管理</name>
+		<name>Save Manager</name>
 	</game>
 	<game>
 		<path>./Tools/System Info.sh</path>
-		<name>系统信息</name>
+		<name>System Info</name>
 	</game>
 	<game>
 		<path>./System Info.sh</path>
-		<name>系统信息</name>
+		<name>System Info</name>
 	</game>
 	<game>
 		<path>./Tools/Bluetooth Manager.sh</path>
-		<name>蓝牙管理工具</name>
+		<name>Bluetooth Manager</name>
 	</game>
 	<game>
 		<path>./Clone/Toggle Audio.sh</path>
-		<name>声音调整</name>
+		<name>Toggle Audio</name>
 	</game>
 	<game>
 		<path>./Clone/sdljoytest.sh</path>
-		<name>SDL按键测试</name>
+		<name>SDL Button Test</name>
 	</game>
 	<game>
 		<path>./351Files.sh</path>
-		<name>351文件管理器</name>
+		<name>351Files File Manager</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Bluetooth.sh</path>
-		<name>蓝牙管理</name>
+		<name>Bluetooth</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Change Time.sh</path>
-		<name>修改时间</name>
+		<name>Change Time</name>
 	</game>
 	<game>
 		<path>./Set Launchimage to ascii or pic.sh</path>
-		<name>修改启动图从ascii或pic</name>
+		<name>Set Boot Image to ASCII or Picture</name>
 	</game>
 	<game>
 		<path>./Set Launchimage to vid.sh</path>
-		<name>修改启动图为vid</name>
+		<name>Set Boot Image to Video</name>
 	</game>
 	<game>
 		<path>./Wifi-Toggle.sh</path>
-		<name>Wifi 开关[USB WIFI不要使用该功能]</name>
+		<name>WiFi Toggle [do not use with USB WiFi]</name>
 	</game>
 	<game>
 		<path>./Remove ._ Files.sh</path>
-		<name>移除 ._ 文件</name>
+		<name>Remove ._ Files</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./MSDOS - Show zip games.sh</path>
-		<name>MSDOS - 显示 zip 格式的游戏</name>
+		<name>MSDOS - Show zip games</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./MSDOS - Hide zip games.sh</path>
-		<name>MSDOS - 隐藏 zip 格式的游戏</name>
+		<name>MSDOS - Hide zip games</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./PS1 - Show all games.sh</path>
-		<name>PS1 - 显示所有游戏</name>
+		<name>PS1 - Show all games</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./PS1 - Show only m3u games.sh</path>
-		<name>PS1 - 只显示 m3u 文件的游戏</name>
+		<name>PS1 - Show only m3u games</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./PS1 - Generate m3u files.sh</path>
-		<name>PS1 - 生成 m3u 文件</name>
+		<name>PS1 - Generate m3u files</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./PS1 - Delete m3u files.sh</path>
-		<name>PS1 - 删除 m3u 文件</name>
+		<name>PS1 - Delete m3u files</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Change LED to Green.sh</path>
-		<name>切换 LED 为绿色</name>
+		<name>Change LED to Green</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Change LED to Red.sh</path>
-		<name>切换 LED 为红色</name>
+		<name>Change LED to Red</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Enable Remote Services.sh</path>
-		<name>启用远程服务</name>
+		<name>Enable Remote Services</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Change Password.sh</path>
-		<name>更改密码</name>
+		<name>Change Password</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Disable Remote Services.sh</path>
-		<name>禁用远程服务</name>
+		<name>Disable Remote Services</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./File Manager.sh</path>
-		<name>文件管理器</name>
+		<name>File Manager</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Network Info.sh</path>
-		<name>网络信息</name>
+		<name>Network Info</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Switch Launchimage to ascii.sh</path>
-		<name>切换启动画面为 ASCII 模式</name>
+		<name>Switch Boot Screen to ASCII</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Switch Launchimage to jpg.sh</path>
-		<name>切换启动画面为图片模式</name>
+		<name>Switch Boot Screen to Image</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Update.sh</path>
-		<name>升级系统</name>
+		<name>Update System</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./USB Drive Mount.sh</path>
-		<name>挂载 USB 设备</name>
+		<name>Mount USB Drive</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./USB Drive Unmount.sh</path>
-		<name>卸载 USB 设备</name>
+		<name>Unmount USB Drive</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Wifi.sh</path>
-		<name>Wifi 设置</name>
+		<name>WiFi Settings</name>
 		<playcount>4</playcount>
 		<lastplayed>20210501T020326</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Backup Settings.sh</path>
-		<name>备份设置</name>
+		<name>Backup Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Disable Wifi.sh</path>
-		<name>关闭 Wifi</name>
+		<name>Disable WiFi</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Enable Wifi.sh</path>
-		<name>开启 Wifi</name>
+		<name>Enable WiFi</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Fix Global Hotkeys.sh</path>
-		<name>修复全局快捷键</name>
+		<name>Fix Global Hotkeys</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Switch to SD2 for Roms.sh</path>
-		<name>切换使用 TF2 内游戏</name>
+		<name>Use Roms from SD2</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Read from SD1 and SD2 for Roms.sh</path>
-		<name>读取 TF1 和 TF2 双卡里的游戏</name>
+		<name>Read Roms from SD1 and SD2</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Switch to main SD for Roms.sh</path>
-		<name>切换使用 TF1 内游戏</name>
+		<name>Use Roms from SD1</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default Retroarch32 Core Settings.sh</path>
-		<name>恢复默认的 Retroarch 32位核心设置</name>
+		<name>Reset Retroarch 32-bit Core Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default Retroarch32 Settings.sh</path>
-		<name>恢复默认的 Retroarch 32位设置</name>
+		<name>Reset Retroarch 32-bit Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default Retroarch Core Settings.sh</path>
-		<name>恢复默认的 Retroarch 核心设置</name>
+		<name>Reset Retroarch Core Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default Retroarch Settings.sh</path>
-		<name>恢复默认的 Retroarch 设置</name>
+		<name>Reset Retroarch Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Settings.sh</path>
-		<name>恢复设置</name>
+		<name>Restore Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Clear Last Played Collection.sh</path>
-		<name>清除上次玩过的收藏游戏</name>
+		<name>Clear Last Played Collection</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Screen - Switch to Original Screen Timings.sh</path>
-		<name>屏幕 - 切换到原始屏幕时序</name>
+		<name>Screen - Original Screen Timings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Screen - Switch to Tony Screen Timings.sh</path>
-		<name>屏幕 - 切换到 Tony 屏幕时序</name>
+		<name>Screen - Tony Screen Timings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Reset Retroarch32 Core Settings.sh</path>
-		<name>恢复默认的 Retroarch 32位核心设置</name>
+		<name>Reset Retroarch 32-bit Core Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Reset Retroarch32 Settings.sh</path>
-		<name>恢复默认的 Retroarch 32位设置</name>
+		<name>Reset Retroarch 32-bit Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default Drastic Settings.sh</path>
-		<name>恢复默认的 Drastic 设置</name>
+		<name>Reset Drastic Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default PPSSPP Controls.sh</path>
-		<name>恢复默认的 PPSSPP 设置</name>
+		<name>Reset PPSSPP Controls</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Reset Retroarch Core Settings.sh</path>
-		<name>恢复默认的 Retroarch 核心设置</name>
+		<name>Reset Retroarch Core Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Reset Retroarch Settings.sh</path>
-		<name>恢复默认的 Retroarch 设置</name>
+		<name>Reset Retroarch Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Backup ArkOS Settings.sh</path>
-		<name>备份 ArkOS 设置</name>
+		<name>Backup ArkOS Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Disable Low Battery Warning.sh</path>
-		<name>关闭低电量警告</name>
+		<name>Disable Low Battery Warning</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/enable low battery warning.sh</path>
-		<name>开启低电量警告</name>
+		<name>Enable Low Battery Warning</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/ES FullScreen.sh</path>
-		<name>切换 ES 沉浸模式</name>
+		<name>Toggle ES Fullscreen</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/ES Header.sh</path>
-		<name>切换 ES 标题模式</name>
+		<name>Toggle ES Header</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Fix ExFat Partition.sh</path>
-		<name>修复 ExFat 分区</name>
+		<name>Fix ExFat Partition</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore ArkOS Settings.sh</path>
-		<name>恢复设置</name>
+		<name>Restore Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Triggers -- Enable OGA 1.1 Version.sh</path>
-		<name>触发器-启用 OGA 1.1 版本</name>
+		<name>Triggers - Enable OGA 1.1</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Triggers -- Enable RGB10 Version.sh</path>
-		<name>触发器-启用 OGA 1.0 版本</name>
+		<name>Triggers - Enable RGB10 (OGA 1.0)</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Enable Developer Mode.sh</path>
-		<name>启用开发者模式</name>
+		<name>Enable Developer Mode</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/wifioff.sh</path>
-		<name>关闭 WIFI</name>
+		<name>Disable WiFi</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/wifion.sh</path>
-		<name>开启 WIFI</name>
+		<name>Enable WiFi</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Screen - Switch to Original Screen Timings.sh</path>
-		<name>屏幕-切换到原始屏幕时序</name>
+		<name>Screen - Original Screen Timings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Screen - Switch to Tony Screen Timings.sh</path>
-		<name>屏幕-切换到 Tony 屏幕时序(60Hz)</name>
+		<name>Screen - Tony Screen Timings (60Hz)</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Sleep - Switch to Deep sleep support.sh</path>
-		<name>待机-切换到深度睡眠模式</name>
+		<name>Sleep - Deep Sleep Mode</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Sleep - Switch to Light sleep support.sh</path>
-		<name>待机-切换到轻度睡眠模式</name>
+		<name>Sleep - Light Sleep Mode</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Enable Experimental Touch support.sh</path>
-		<name>启用实验性触摸支持</name>
+		<name>Enable Experimental Touch Support</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Disable Experimental Touch support.sh</path>
-		<name>禁用实验性触摸支持</name>
+		<name>Disable Experimental Touch Support</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Enable Quick Mode.sh</path>
-		<name>启用快速模式</name>
+		<name>Enable Quick Mode</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Disable Quick Mode.sh</path>
-		<name>禁用快速模式</name>
+		<name>Disable Quick Mode</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default GZdoom Settings.sh</path>
-		<name>恢复默认的 GZdoom 设置</name>
+		<name>Reset GZdoom Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Restore Default LZdoom Settings.sh</path>
-		<name>恢复默认的 LZdoom 设置</name>
+		<name>Reset LZdoom Settings</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Controller Tester.sh</path>
-		<name>控制器测试</name>
+		<name>Controller Tester</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Fix Audio.sh</path>
-		<name>音频修复</name>
+		<name>Fix Audio</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Change Ports SDL.sh</path>
-		<name>更改 Ports SDL</name>
+		<name>Change Ports SDL</name>
 		<playcount>3</playcount>
 		<lastplayed>20210501T203120</lastplayed>
 	</game>
 	<game>
 		<path>./Advanced/Reset EmulationStation Controls.sh</path>
-		<name>重置ES控制器</name>
+		<name>Reset EmulationStation Controls</name>
 	</game>
 	<game>
 		<path>./Advanced/Restore ECWolf Joystick.sh</path>
-		<name>重置ECWolf控制器</name>
+		<name>Reset ECWolf Controls</name>
 	</game>
 	<game>
 		<path>./Advanced/NDS Overlays/Disable NDS Overlays.sh</path>
-		<name>关闭nds遮罩</name>
+		<name>Disable NDS Overlays</name>
 	</game>
 	<game>
 		<path>./Advanced/NDS Overlays/Enable NDS Overlays.sh</path>
-		<name>开启nds遮罩</name>
+		<name>Enable NDS Overlays</name>
 	</game>
 	<game>
 		<path>./Advanced/Video Boot/Disable Video Boot.sh</path>
-		<name>关闭视频启动</name>
+		<name>Disable Video Boot</name>
 	</game>
 	<game>
 		<path>./Advanced/Video Boot/Enable Video Boot.sh</path>
-		<name>开启视频启动</name>
+		<name>Enable Video Boot</name>
 	</game>
 </gameList>

@@ -2,38 +2,38 @@
 set -euo pipefail
 
 # ============================================
-# ArkOS4Clone OTA 升级包制作脚本
+# ArkOS4Clone OTA update package build script
 #
-# 用法：
-#   sudo ./build_update_tar.sh           # 构建 ArkOS 版本
-#   sudo ./build_update_tar.sh -d        # 构建 dArkOS 版本
-#   sudo ./build_update_tar.sh darkos    # 构建 dArkOS 版本
+# Usage:
+#   sudo ./build_update_tar.sh           # Build the ArkOS version
+#   sudo ./build_update_tar.sh -d        # Build the dArkOS version
+#   sudo ./build_update_tar.sh darkos    # Build the dArkOS version
 #
-# 输出文件：
-#   ./update.tar   （放到设备 /roms/update.tar）
+# Output file:
+#   ./update.tar   (place it on the device at /roms/update.tar)
 # ============================================
 
-# 解析命令行参数
+# Parse command line arguments
 ARKOS_IMAGE_NAME=""
 for arg in "$@"; do
-  case "${arg,,}" in  # 转小写比较
+  case "${arg,,}" in  # compare in lowercase
     -d|darkos|darkos4clone|darkos4clone)
       ARKOS_IMAGE_NAME="dArkOS"
       ;;
   esac
 done
 
-# 生成版本信息
+# Generate version information
 UPDATE_DATE="$(TZ=Asia/Shanghai date +%m%d%Y)"
 MODDER="kk&lcdyk"
 
-# 工作目录与临时构建目录
+# Work directory and temporary build directory
 WORKDIR="$(pwd)"
 STAGE="/tmp/_ota_stage"
 PAYLOAD_BOOT="${STAGE}/payload/boot"
 PAYLOAD_ROOT="${STAGE}/payload/root"
 
-# boot 分区（FAT32）专用 rsync 参数
+# rsync options specific to the boot partition (FAT32)
 RSYNC_BOOT_OPTS="-rltD --no-owner --no-group --no-perms --omit-dir-times"
 
 # ----------------- helpers -----------------
@@ -57,23 +57,23 @@ meta_finalize_dedupe() {
   mv -f "${META_FILE}.tmp" "$META_FILE"
 }
 
-# 清理旧的构建目录
+# Clean up the old build directory
 rm -rf "$STAGE"
 mkdir -p "$PAYLOAD_BOOT" "$PAYLOAD_ROOT"
 
 if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   # ============================================================
-  # dArkOS 专用逻辑 (UID=1000)
+  # dArkOS-specific logic (UID=1000)
   # ============================================================
-  echo "=== 检测到 dArkOS 镜像，构建 dArkOS OTA 包 ==="
+  echo "=== dArkOS image detected, building the dArkOS OTA package ==="
   VERSION="dArkOS4Clone-${UPDATE_DATE}-${MODDER}"
   CHOWN_USER="1000:1000"
   OUT_TAR="${WORKDIR}/update-darkos.tar"
 
-  echo "== 构建 payload/boot =="
+  echo "== Building payload/boot =="
   mkdir -p "$PAYLOAD_BOOT/consoles"
   rsync $RSYNC_BOOT_OPTS --exclude='files' ./consoles/ "$PAYLOAD_BOOT/consoles/"
-  # dArkOS 使用 logo-darkos
+  # dArkOS uses logo-darkos
   if [[ -d "$PAYLOAD_BOOT/consoles/logo-darkos" ]]; then
     rm -rf "$PAYLOAD_BOOT/consoles/logo"
     mv "$PAYLOAD_BOOT/consoles/logo-darkos" "$PAYLOAD_BOOT/consoles/logo"
@@ -83,40 +83,40 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   cp -f ./dtb_selector_macos ./dtb_selector_win32.exe ./dtb_selector_linux32 "$PAYLOAD_BOOT/" 2>/dev/null || true
   touch "$PAYLOAD_BOOT/USE_DTB_SELECT_TO_SELECT_DEVICE" 2>/dev/null || true
 
-  echo "== 构建 payload/root =="
-  echo "== 注入设备怪癖 =="
+  echo "== Building payload/root =="
+  echo "== Injecting device quirks =="
   mkdir -p "$PAYLOAD_ROOT/home/ark/.quirks"
   cp -r ./consoles/files/* "$PAYLOAD_ROOT/home/ark/.quirks/" 2>/dev/null || true
 
-  echo "== 注入 Clone 配置与工具 =="
+  echo "== Injecting Clone configuration and tools =="
   mkdir -p "$PAYLOAD_ROOT/usr/bin" "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./bin/mcu_led ./bin/ws2812 "$PAYLOAD_ROOT/usr/bin/" 2>/dev/null || true
   cp -f ./bin/sdljoymap ./bin/sdljoytest "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/console_detect "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 添加 dArkOS 固件 =="
+  echo "== Adding dArkOS firmware =="
   if [[ -d "./replace_file/firmware" ]]; then
     mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware"
     cp -rf ./replace_file/firmware/. "$PAYLOAD_ROOT/usr/lib/firmware/" 2>/dev/null || true
   fi
 
-  echo "== 注入 rk915 固件 =="
+  echo "== Injecting rk915 firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/"
   cp -f ./bin/rk915/* "$PAYLOAD_ROOT/usr/lib/firmware/" 2>/dev/null || true
 
-  echo "== 注入 swt6621s 固件 =="
+  echo "== Injecting swt6621s firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/"
   cp -f ./bin/swt6621s/* "$PAYLOAD_ROOT/usr/lib/firmware/" 2>/dev/null || true
 
-  echo "== 注入 aic8800DC 固件 =="
+  echo "== Injecting aic8800DC firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/aic8800DC"
   cp -f ./bin/aic8800DC/* "$PAYLOAD_ROOT/usr/lib/firmware/aic8800DC/" 2>/dev/null || true
 
-  echo "== 注入 351Files 资源 =="
+  echo "== Injecting 351Files resources =="
   mkdir -p "$PAYLOAD_ROOT/opt/351Files/res"
   cp -r ./replace_file/351Files/. "$PAYLOAD_ROOT/opt/351Files/" 2>/dev/null || true
 
-  echo "== 注入 dArkOS 启动脚本 =="
+  echo "== Injecting dArkOS startup scripts =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./replace_file/darkos4atomiswave.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./replace_file/darkos4dreamcast.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
@@ -133,29 +133,29 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   cp -f ./replace_file/freej2me.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./replace_file/mediaplayer.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 es-service 服务 =="
+  echo "== Injecting the es-service service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   cp -f ./bin/es-service/es-status-daemon.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/es-service/es-status-daemon.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 注入 zram 服务 =="
+  echo "== Injecting the zram service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   cp -f ./bin/zram-service/zram-setup.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/zram-service/zram.conf "$PAYLOAD_ROOT/etc/" 2>/dev/null || true
   cp -f ./bin/zram-service/zram-swap.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 注入 batteryplus 服务 =="
+  echo "== Injecting the batteryplus service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   mkdir -p "$PAYLOAD_ROOT/etc/batteryplus/"
   cp -f ./bin/batteryplus-service/batteryplus "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/batteryplus-service/batteryplus.conf "$PAYLOAD_ROOT/etc/batteryplus/" 2>/dev/null || true
   cp -f ./bin/batteryplus-service/batteryplus.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 添加 Gamma =="
+  echo "== Adding Gamma =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./replace_file/gamma/gamma "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入核心与 EmulationStation 文件 =="
+  echo "== Injecting cores and EmulationStation files =="
   mkdir -p "$PAYLOAD_ROOT/home/ark/.config/retroarch/cores" \
            "$PAYLOAD_ROOT/home/ark/.config/retroarch32/cores" \
            "$PAYLOAD_ROOT/etc/emulationstation" \
@@ -170,54 +170,54 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   mkdir -p "$PAYLOAD_ROOT/usr/bin/emulationstation"
   cp -r ./replace_file/emulationstation "$PAYLOAD_ROOT/usr/bin/emulationstation/emulationstation" 2>/dev/null || true
 
-  echo "== 注入 drastic =="
+  echo "== Injecting drastic =="
   mkdir -p "$PAYLOAD_ROOT/opt/drastic"
   cp -a ./replace_file/drastic/. "$PAYLOAD_ROOT/opt/drastic/" 2>/dev/null || true
 
-  echo "== 注入 drastic-kk =="
+  echo "== Injecting drastic-kk =="
   mkdir -p "$PAYLOAD_ROOT/opt/drastic-kk"
   cp -a ./replace_file/drastic-kk/. "$PAYLOAD_ROOT/opt/drastic-kk/" 2>/dev/null || true
 
-  echo "== 添加 onscripter-sa =="
+  echo "== Adding onscripter-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/onscripter"
   cp -a ./replace_file/onscripter/. "$PAYLOAD_ROOT/opt/onscripter/" 2>/dev/null || true
 
-  echo "== 添加 freej2me-sa =="
+  echo "== Adding freej2me-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/freej2mesa"
   cp -a ./replace_file/freej2mesa/. "$PAYLOAD_ROOT/opt/freej2mesa/" 2>/dev/null || true
 
-  echo "== 改用自适应分辨率 Retroarch 1.22.2 =="
+  echo "== Switching to adaptive-resolution Retroarch 1.22.2 =="
   mkdir -p "$PAYLOAD_ROOT/opt/retroarch/bin/"
   cp -a ./replace_file/retroarch/retroarch "$PAYLOAD_ROOT/opt/retroarch/bin/" 2>/dev/null || true
   cp -a ./replace_file/retroarch/retroarch32 "$PAYLOAD_ROOT/opt/retroarch/bin/" 2>/dev/null || true
 
-  echo "== 注入 json-c3 库 =="
+  echo "== Injecting the json-c3 library =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/aarch64-linux-gnu/"
   cp -f ./bin/json-c3/* "$PAYLOAD_ROOT/usr/lib/aarch64-linux-gnu/" 2>/dev/null || true
 
-  echo "== 更新和添加 flycastsa =="
+  echo "== Updating and adding flycastsa =="
   mkdir -p "$PAYLOAD_ROOT/opt/flycastsa"
   cp -a ./replace_file/flycastsa/. "$PAYLOAD_ROOT/opt/flycastsa/" 2>/dev/null || true
 
-  echo "== 更新和添加 yabasanshiro-sa =="
+  echo "== Updating and adding yabasanshiro-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/yabasanshiro"
   cp -a ./replace_file/yabasanshiro/. "$PAYLOAD_ROOT/opt/yabasanshiro/" 2>/dev/null || true
 
-  echo "== 注入 retrorun =="
+  echo "== Injecting retrorun =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -r ./replace_file/retrorun/retrorun32 "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -r ./replace_file/retrorun/retrorun "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 pymo =="
+  echo "== Injecting pymo =="
   cp -r ./replace_file/pymo/cpymo "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -r ./replace_file/pymo/pymo.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 ogage =="
+  echo "== Injecting ogage =="
   cp -r ./replace_file/ogage "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   mkdir -p "$PAYLOAD_ROOT/home/ark/.quirks"
   cp -r ./replace_file/ogage "$PAYLOAD_ROOT/home/ark/.quirks/" 2>/dev/null || true
 
-  echo "== 注入 services / tools =="
+  echo "== Injecting services / tools =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system" \
            "$PAYLOAD_ROOT/opt/system/Advanced" \
            "$PAYLOAD_ROOT/opt/system/Tools" \
@@ -229,23 +229,23 @@ if [[ "$ARKOS_IMAGE_NAME" == *dArkOS* ]]; then
   cp -r "./replace_file/tools/Disable Quick Mode.sh" "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -r "./replace_file/tools/Ports Fix.sh" "$PAYLOAD_ROOT/opt/system/Tools/" 2>/dev/null || true
 
-  echo "== 注入 modules =="
+  echo "== Injecting modules =="
   if [[ -d "./replace_file/modules" ]]; then
     mkdir -p "$PAYLOAD_ROOT/usr/lib/modules"
     cp -a ./replace_file/modules/. "$PAYLOAD_ROOT/usr/lib/modules/" 2>/dev/null || true
   fi
 
-  echo "== 注入 Jason3_Scripte 工具 =="
+  echo "== Injecting the Jason3_Scripte tools =="
   cp -r "./Jason3_Scripte/wifi-toggle/Wifi-toggle.sh" "$PAYLOAD_ROOT/opt/system/Wifi-Toggle.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/InfoSystem/InfoSystem.sh" "$PAYLOAD_ROOT/opt/system/Tools/System Info.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/GhostLoader/GhostLoader.sh" "$PAYLOAD_ROOT/opt/system/Tools/Ghost Loader.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/Bluetooth-Manager/Bluetooth Manager.sh" "$PAYLOAD_ROOT/opt/system/Tools/" 2>/dev/null || true
   cp -r "./Jason3_Scripte/Bluetooth-Manager/patch.pak" "$PAYLOAD_ROOT/opt/system/Tools/" 2>/dev/null || true
 
-  echo "== 跳过 roms.tar（设计如此） =="
+  echo "== Skipping roms.tar (by design) =="
 
-  # ---- META：dArkOS 权限 1000:1000 ----
-  echo "== 写入 VERSION / META / install.sh =="
+  # ---- META: dArkOS ownership 1000:1000 ----
+  echo "== Writing VERSION / META / install.sh =="
   cat > "$STAGE/VERSION" <<EOF
 $VERSION
 EOF
@@ -319,51 +319,51 @@ EOF
 
 else
   # ============================================================
-  # ArkOS 专用逻辑 (UID=1002)
+  # ArkOS-specific logic (UID=1002)
   # ============================================================
-  echo "=== 检测到 ArkOS 镜像，构建 ArkOS OTA 包 ==="
+  echo "=== ArkOS image detected, building the ArkOS OTA package ==="
   VERSION="ArkOS4Clone-${UPDATE_DATE}-${MODDER}"
   CHOWN_USER="1002:1002"
   OUT_TAR="${WORKDIR}/update-arkos.tar"
 
-  echo "== 构建 payload/boot =="
+  echo "== Building payload/boot =="
   mkdir -p "$PAYLOAD_BOOT/consoles"
   rsync $RSYNC_BOOT_OPTS --exclude='files' ./consoles/ "$PAYLOAD_BOOT/consoles/"
-  # ArkOS 删除 logo-darkos
+  # ArkOS removes logo-darkos
   rm -rf "$PAYLOAD_BOOT/consoles/logo-darkos" 2>/dev/null || true
   cp -f ./sh/clone.sh "$PAYLOAD_BOOT/firstboot.sh"
   cp -f ./sh/expandtoexfat.sh "$PAYLOAD_BOOT/expandtoexfat.sh"
   cp -f ./dtb_selector_macos ./dtb_selector_win32.exe ./dtb_selector_linux32 "$PAYLOAD_BOOT/" 2>/dev/null || true
   touch "$PAYLOAD_BOOT/USE_DTB_SELECT_TO_SELECT_DEVICE" 2>/dev/null || true
 
-  echo "== 构建 payload/root =="
-  echo "== 注入设备怪癖 =="
+  echo "== Building payload/root =="
+  echo "== Injecting device quirks =="
   mkdir -p "$PAYLOAD_ROOT/home/ark/.quirks"
   cp -r ./consoles/files/* "$PAYLOAD_ROOT/home/ark/.quirks/" 2>/dev/null || true
 
-  echo "== 注入 Clone 配置与工具 =="
+  echo "== Injecting Clone configuration and tools =="
   mkdir -p "$PAYLOAD_ROOT/usr/bin" "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./bin/mcu_led ./bin/ws2812 "$PAYLOAD_ROOT/usr/bin/" 2>/dev/null || true
   cp -f ./bin/sdljoymap ./bin/sdljoytest "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/console_detect "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 rk915 固件 =="
+  echo "== Injecting rk915 firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/"
   cp -f ./bin/rk915/* "$PAYLOAD_ROOT/usr/lib/firmware/" 2>/dev/null || true
 
-  echo "== 注入 swt6621s 固件 =="
+  echo "== Injecting swt6621s firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/"
   cp -f ./bin/swt6621s/* "$PAYLOAD_ROOT/usr/lib/firmware/" 2>/dev/null || true
 
-  echo "== 注入 aic8800DC 固件 =="
+  echo "== Injecting aic8800DC firmware =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/firmware/aic8800DC"
   cp -f ./bin/aic8800DC/* "$PAYLOAD_ROOT/usr/lib/firmware/aic8800DC/" 2>/dev/null || true
 
-  echo "== 注入 351Files 资源 =="
+  echo "== Injecting 351Files resources =="
   mkdir -p "$PAYLOAD_ROOT/opt/351Files/res"
   cp -r ./replace_file/351Files/. "$PAYLOAD_ROOT/opt/351Files/" 2>/dev/null || true
 
-  echo "== 注入 ArkOS 启动脚本 =="
+  echo "== Injecting ArkOS startup scripts =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./replace_file/atomiswave.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./replace_file/dreamcast.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
@@ -385,29 +385,29 @@ else
   cp -f ./replace_file/mediaplayer.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./replace_file/get_last_played.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 es-service 服务 =="
+  echo "== Injecting the es-service service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   cp -f ./bin/es-service/es-status-daemon.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/es-service/es-status-daemon.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 注入 zram 服务 =="
+  echo "== Injecting the zram service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   cp -f ./bin/zram-service/zram-setup.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/zram-service/zram.conf "$PAYLOAD_ROOT/etc/" 2>/dev/null || true
   cp -f ./bin/zram-service/zram-swap.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 注入 batteryplus 服务 =="
+  echo "== Injecting the batteryplus service =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system"
   mkdir -p "$PAYLOAD_ROOT/etc/batteryplus/"
   cp -f ./bin/batteryplus-service/batteryplus "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -f ./bin/batteryplus-service/batteryplus.conf "$PAYLOAD_ROOT/etc/batteryplus/" 2>/dev/null || true
   cp -f ./bin/batteryplus-service/batteryplus.service "$PAYLOAD_ROOT/etc/systemd/system/" 2>/dev/null || true
 
-  echo "== 添加 Gamma =="
+  echo "== Adding Gamma =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -f ./replace_file/gamma/gamma "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入核心与 EmulationStation 文件 =="
+  echo "== Injecting cores and EmulationStation files =="
   mkdir -p "$PAYLOAD_ROOT/home/ark/.config/retroarch/cores" \
            "$PAYLOAD_ROOT/home/ark/.config/retroarch32/cores" \
            "$PAYLOAD_ROOT/etc/emulationstation" \
@@ -424,98 +424,98 @@ else
   mkdir -p "$PAYLOAD_ROOT/usr/bin/emulationstation"
   cp -r ./replace_file/emulationstation "$PAYLOAD_ROOT/usr/bin/emulationstation/emulationstation" 2>/dev/null || true
 
-  echo "== 注入 drastic =="
+  echo "== Injecting drastic =="
   mkdir -p "$PAYLOAD_ROOT/opt/drastic"
   cp -a ./replace_file/drastic/. "$PAYLOAD_ROOT/opt/drastic/" 2>/dev/null || true
 
-  echo "== 注入 drastic-kk =="
+  echo "== Injecting drastic-kk =="
   mkdir -p "$PAYLOAD_ROOT/opt/drastic-kk"
   cp -a ./replace_file/drastic-kk/. "$PAYLOAD_ROOT/opt/drastic-kk/" 2>/dev/null || true
 
-  echo "== 注入 DSperate-sa =="
+  echo "== Injecting DSperate-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/DSperate"
   cp -a ./replace_file/DSperate/. "$PAYLOAD_ROOT/opt/DSperate/" 2>/dev/null || true
 
-  echo "== 添加 onscripter-sa =="
+  echo "== Adding onscripter-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/onscripter"
   cp -a ./replace_file/onscripter/. "$PAYLOAD_ROOT/opt/onscripter/" 2>/dev/null || true
 
-  echo "== 添加 freej2me-sa =="
+  echo "== Adding freej2me-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/freej2mesa"
   cp -a ./replace_file/freej2mesa/. "$PAYLOAD_ROOT/opt/freej2mesa/" 2>/dev/null || true
 
-  echo "== 改用自适应分辨率 Retroarch 1.22.2 =="
+  echo "== Switching to adaptive-resolution Retroarch 1.22.2 =="
   mkdir -p "$PAYLOAD_ROOT/opt/retroarch/bin/"
   cp -a ./replace_file/retroarch/retroarch "$PAYLOAD_ROOT/opt/retroarch/bin/" 2>/dev/null || true
   cp -a ./replace_file/retroarch/retroarch32 "$PAYLOAD_ROOT/opt/retroarch/bin/" 2>/dev/null || true
 
-  echo "== 注入 json-c3 库 =="
+  echo "== Injecting the json-c3 library =="
   mkdir -p "$PAYLOAD_ROOT/usr/lib/aarch64-linux-gnu/"
   cp -f ./bin/json-c3/* "$PAYLOAD_ROOT/usr/lib/aarch64-linux-gnu/" 2>/dev/null || true
 
-  echo "== 更新 Fake08-sa =="
+  echo "== Updating Fake08-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/fake08"
   cp -a ./replace_file/fake08/. "$PAYLOAD_ROOT/opt/fake08/" 2>/dev/null || true
 
-  echo "== 更新 PPSSPP 1.20.4 =="
+  echo "== Updating PPSSPP 1.20.4 =="
   mkdir -p "$PAYLOAD_ROOT/opt/ppsspp"
   cp -a ./replace_file/ppsspp/. "$PAYLOAD_ROOT/opt/ppsspp/" 2>/dev/null || true
 
-  echo "== 替换 PPSSPP-2021 =="
+  echo "== Replacing PPSSPP-2021 =="
   mkdir -p "$PAYLOAD_ROOT/opt/ppsspp-2021"
   cp -a ./replace_file/ppsspp-2021/. "$PAYLOAD_ROOT/opt/ppsspp-2021/" 2>/dev/null || true
 
-  echo "== 更新 mupen64plus =="
+  echo "== Updating mupen64plus =="
   mkdir -p "$PAYLOAD_ROOT/opt/mupen64plus"
   cp -a ./replace_file/mupen64plus/. "$PAYLOAD_ROOT/opt/mupen64plus/" 2>/dev/null || true
 
-  echo "== 更新 ScummVM v2026.3.0 =="
+  echo "== Updating ScummVM v2026.3.0 =="
   mkdir -p "$PAYLOAD_ROOT/opt/scummvm"
   cp -a ./replace_file/scummvm/. "$PAYLOAD_ROOT/opt/scummvm/" 2>/dev/null || true
 
-  echo "== 更新和添加 flycastsa =="
+  echo "== Updating and adding flycastsa =="
   mkdir -p "$PAYLOAD_ROOT/opt/flycastsa"
   cp -a ./replace_file/flycastsa/. "$PAYLOAD_ROOT/opt/flycastsa/" 2>/dev/null || true
 
-  echo "== 更新 duckstation =="
+  echo "== Updating duckstation =="
   mkdir -p "$PAYLOAD_ROOT/opt/duckstation"
   cp -a ./replace_file/duckstation/. "$PAYLOAD_ROOT/opt/duckstation/" 2>/dev/null || true
 
-  echo "== 添加 rufflesa =="
+  echo "== Adding rufflesa =="
   mkdir -p "$PAYLOAD_ROOT/opt/rufflesa"
   cp -a ./replace_file/rufflesa/. "$PAYLOAD_ROOT/opt/rufflesa/" 2>/dev/null || true
 
-  echo "== 添加 gametank-sa =="
+  echo "== Adding gametank-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/gametank"
   cp -a ./replace_file/gametank/. "$PAYLOAD_ROOT/opt/gametank/" 2>/dev/null || true
 
-  echo "== 注入 retrorun =="
+  echo "== Injecting retrorun =="
   mkdir -p "$PAYLOAD_ROOT/usr/local/bin"
   cp -r ./replace_file/retrorun/. "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 pymo =="
+  echo "== Injecting pymo =="
   cp -r ./replace_file/pymo/cpymo "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -r ./replace_file/pymo/pymo.sh "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 ogage =="
+  echo "== Injecting ogage =="
   cp -r ./replace_file/ogage "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   mkdir -p "$PAYLOAD_ROOT/home/ark/.quirks"
   cp -r ./replace_file/ogage "$PAYLOAD_ROOT/home/ark/.quirks/" 2>/dev/null || true
 
-  echo "== 更新和添加 yabasanshiro-sa =="
+  echo "== Updating and adding yabasanshiro-sa =="
   mkdir -p "$PAYLOAD_ROOT/opt/yabasanshiro"
   cp -a ./replace_file/yabasanshiro/. "$PAYLOAD_ROOT/opt/yabasanshiro/" 2>/dev/null || true
 
-  echo "== 添加 krkr2 =="
+  echo "== Adding krkr2 =="
   mkdir -p "$PAYLOAD_ROOT/opt/krkr2"
   cp -a ./replace_file/krkr2/. "$PAYLOAD_ROOT/opt/krkr2/" 2>/dev/null || true
 
-  echo "== 添加 OpenborFF =="
+  echo "== Adding OpenborFF =="
   mkdir -p "$PAYLOAD_ROOT/opt/OpenBorFF"
   cp -a ./replace_file/OpenBorFF/. "$PAYLOAD_ROOT/opt/OpenBorFF/" 2>/dev/null || true
   cp -a ./replace_file/OpenBor/. "$PAYLOAD_ROOT/opt/OpenBor/" 2>/dev/null || true
 
-  echo "== 注入 services / tools =="
+  echo "== Injecting services / tools =="
   mkdir -p "$PAYLOAD_ROOT/etc/systemd/system" \
            "$PAYLOAD_ROOT/opt/system/Advanced" \
            "$PAYLOAD_ROOT/opt/system/Tools" \
@@ -526,23 +526,23 @@ else
   cp -r "./replace_file/tools/Enable Quick Mode.sh" "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
   cp -r "./replace_file/tools/Disable Quick Mode.sh" "$PAYLOAD_ROOT/usr/local/bin/" 2>/dev/null || true
 
-  echo "== 注入 modules =="
+  echo "== Injecting modules =="
   if [[ -d "./replace_file/modules" ]]; then
     mkdir -p "$PAYLOAD_ROOT/usr/lib/modules"
     cp -a ./replace_file/modules/. "$PAYLOAD_ROOT/usr/lib/modules/" 2>/dev/null || true
   fi
 
-  echo "== 注入 Jason3_Scripte 工具 =="
+  echo "== Injecting the Jason3_Scripte tools =="
   cp -r "./Jason3_Scripte/wifi-toggle/Wifi-toggle.sh" "$PAYLOAD_ROOT/opt/system/Wifi-Toggle.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/InfoSystem/InfoSystem.sh" "$PAYLOAD_ROOT/opt/system/Tools/System Info.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/GhostLoader/GhostLoader.sh" "$PAYLOAD_ROOT/opt/system/Tools/Ghost Loader.sh" 2>/dev/null || true
   cp -r "./Jason3_Scripte/Bluetooth-Manager/Bluetooth Manager.sh" "$PAYLOAD_ROOT/opt/system/Tools/" 2>/dev/null || true
   cp -r "./Jason3_Scripte/Bluetooth-Manager/patch.pak" "$PAYLOAD_ROOT/opt/system/Tools/" 2>/dev/null || true
 
-  echo "== 跳过 roms.tar（设计如此） =="
+  echo "== Skipping roms.tar (by design) =="
 
-  # ---- META：ArkOS 权限 1002:1002 ----
-  echo "== 写入 VERSION / META / install.sh =="
+  # ---- META: ArkOS ownership 1002:1002 ----
+  echo "== Writing VERSION / META / install.sh =="
   cat > "$STAGE/VERSION" <<EOF
 $VERSION
 EOF
@@ -639,7 +639,7 @@ EOF
 fi
 
 # -----------------------------
-# install.sh（通用，自动检测 dArkOS/ArkOS）
+# install.sh (generic; auto-detects dArkOS/ArkOS)
 # -----------------------------
 cat > "$STAGE/install.sh" <<'EOF'
 #!/bin/bash
@@ -680,7 +680,7 @@ svc_stop_disable() {
   systemctl reset-failed "$svc" 2>/dev/null || true
 }
 
-# 检测当前系统类型
+# Detect the current system type
 PLYMOUTH_THEME="/usr/share/plymouth/themes/text.plymouth"
 IS_DARKOS="false"
 if [[ -f "$PLYMOUTH_THEME" ]]; then
@@ -693,7 +693,7 @@ if [[ -f "$PLYMOUTH_THEME" ]]; then
   fi
 fi
 
-# 根据系统类型设置权限用户
+# Set the ownership user based on the system type
 if [[ "$IS_DARKOS" == "true" ]]; then
   CHOWN_USER="1000:1000"
 else
@@ -773,7 +773,7 @@ apply_meta() {
   while read -r mode ug path; do
     [[ -z "${mode:-}" || -z "${ug:-}" || -z "${path:-}" ]] && continue
     [[ "${mode:0:1}" == "#" ]] && continue
-    # 使用实际的 CHOWN_USER 替换 META 中的值
+    # Use the actual CHOWN_USER in place of the value from META
     for p in $path; do
       [[ -e "$p" || -L "$p" ]] || continue
       chown -h "$CHOWN_USER" "$p" 2>/dev/null || true
@@ -858,7 +858,7 @@ if [[ -f "$BASE/VERSION" && -f "$PLYMOUTH_THEME" ]]; then
   if [[ "$IS_DARKOS" == "true" ]]; then
     sed -i "/^title=/c\title=dArkOS4Clone (${UPDATE_DATE})(${MODDER})" "$PLYMOUTH_THEME" 2>/dev/null || true
     log "Plymouth updated: dArkOS4Clone (${UPDATE_DATE})(${MODDER})"
-    # dArkOS: 重命名 darkos4* 脚本
+    # dArkOS: rename the darkos4* scripts
     mv "/usr/local/bin/darkos4atomiswave.sh" "/usr/local/bin/atomiswave.sh" 2>/dev/null || true
     mv "/usr/local/bin/darkos4dreamcast.sh" "/usr/local/bin/dreamcast.sh" 2>/dev/null || true
     mv "/usr/local/bin/darkos4naomi.sh" "/usr/local/bin/naomi.sh" 2>/dev/null || true
@@ -873,7 +873,7 @@ if [[ -f "$BASE/VERSION" && -f "$PLYMOUTH_THEME" ]]; then
   else
     sed -i "/^title=/c\title=ArkOS4Clone (${UPDATE_DATE})(${MODDER})" "$PLYMOUTH_THEME" 2>/dev/null || true
     log "Plymouth updated: ArkOS4Clone (${UPDATE_DATE})(${MODDER})"
-    # ArkOS: 删除 darkos4* 脚本
+    # ArkOS: remove the darkos4* scripts
     rm "/usr/local/bin/darkos4atomiswave.sh" 2>/dev/null || true
     rm "/usr/local/bin/darkos4dreamcast.sh" 2>/dev/null || true
     rm "/usr/local/bin/darkos4naomi.sh" 2>/dev/null || true
@@ -955,18 +955,18 @@ EOF
 chmod +x "$STAGE/install.sh"
 
 # -----------------------------
-# 打包 uboot 镜像
+# Package the uboot images
 # -----------------------------
-echo "== 打包 uboot 镜像 =="
+echo "== Packaging the uboot images =="
 mkdir -p "$STAGE/uboot"
 cp -f ./uboot/idbloader.img "$STAGE/uboot/" 2>/dev/null || true
 cp -f ./uboot/uboot.img     "$STAGE/uboot/" 2>/dev/null || true
 cp -f ./uboot/trust.img     "$STAGE/uboot/" 2>/dev/null || true
 
 # -----------------------------
-# 生成 chunks
+# Generate chunks
 # -----------------------------
-echo "== 生成 chunks =="
+echo "== Generating chunks =="
 CHUNK_DIR="$STAGE/chunks"
 rm -rf "$CHUNK_DIR" 2>/dev/null || true
 mkdir -p "$CHUNK_DIR"
@@ -986,15 +986,15 @@ root chunks/40_root_misc.tar
 EOF
 
 # -----------------------------
-# 打包 update.tar
+# Package update.tar
 # -----------------------------
-echo "== 打包 update.tar =="
+echo "== Packaging update.tar =="
 rm -f "$OUT_TAR" 2>/dev/null || true
 tar --numeric-owner --owner=0 --group=0 -C "$STAGE" -cf "$OUT_TAR" \
   VERSION install.sh META CHUNKS chunks uboot
 
 rm -rf "$STAGE"
 
-echo "== 完成 =="
-echo "版本号: $VERSION"
-echo "输出文件: $OUT_TAR"
+echo "== Done =="
+echo "Version: $VERSION"
+echo "Output file: $OUT_TAR"

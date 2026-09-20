@@ -2,7 +2,7 @@
 
 LOG_FILE="/var/log/darkos-expand.log"
 
-# 初始化日志（追加模式）
+# Initialize the log (append mode)
 log() {
   local ts; ts="$(date '+%Y-%m-%d %H:%M:%S')"
   echo "[$ts] $*" | tee -a "$LOG_FILE"
