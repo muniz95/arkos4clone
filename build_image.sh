@@ -295,12 +295,12 @@ check_clone_dependencies() {
 
   # 检查必需文件
   local files=(
-    "dtb_selector_linux32"
+    "boot/dArkOS/dtb_selector_linux32"
+    "boot/dArkOS/dtb_selector_macos"
+    "boot/dArkOS/dtb_selector_win32.exe"
     "boot/dArkOS/clone.sh"
     "boot/dArkOS/expandtoexfat.sh"
     "boot/ArkOS/expandtoexfat.sh"
-    "rootfs/dArkOS/opt/retrorun/retrorun"
-    "rootfs/ArkOS/home/ark/.config/retroarch/cores/mame_libretro.so.xz"
   )
 
   for f in "${files[@]}"; do
@@ -408,12 +408,32 @@ step_inject() {
 
 step_unmount() {
   log_info "步骤 6/7: 卸载镜像..."
+  # 卸载前在线 trim: 自由块归零/打洞，xz 压缩提速且体积不涨
+  if mountpoint -q "${ARKOS_MNT}/root" && command -v fstrim >/dev/null 2>&1; then
+    log_info "对 root 分区执行 fstrim (空闲块归零)..."
+    fstrim -v "${ARKOS_MNT}/root" || log_warn "fstrim 失败 (设备不支持 discard)，跳过"
+  fi
   if "$SCRIPT_DIR/mount_arkos.sh" unmount; then
     log_ok "镜像卸载完成"
   else
     log_error "镜像卸载失败"
     exit 1
   fi
+}
+
+step_verify_fs() {
+  local img="$1"
+  log_info "校验 p2 文件系统 (e2fsck)..."
+  local loop
+  loop=$(losetup --find -P --show "$img")   # 可写挂载: e2fsck 可顺手修复小问题
+  local rc=0
+  e2fsck -fv "${loop}p2" || rc=$?
+  losetup -d "$loop"
+  if (( rc >= 2 )); then
+    log_error "p2 文件系统存在未修复错误 (e2fsck rc=$rc)"
+    exit 1
+  fi
+  log_ok "p2 文件系统校验通过 (rc=$rc)"
 }
 
 step_compress() {
@@ -584,6 +604,8 @@ main() {
   step_inject
   echo ""
   step_unmount
+  echo ""
+  step_verify_fs "$work_image"
 
   # 压缩并移动
   echo ""

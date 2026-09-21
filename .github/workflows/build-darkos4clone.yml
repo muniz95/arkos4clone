@@ -112,6 +112,6 @@ jobs:
           echo "上传文件: $FILES"
           gh release create "$BUILD_DATE" \
             $FILES \
-            --title "dArkOS4Clone-$BUILD_DATE" \
-            --notes "dArkOS4Clone 构建版本 - $BUILD_DATE" \
+            --title "ArkOS4Clone-$BUILD_DATE" \
+            --notes "ArkOS4Clone 构建版本 - $BUILD_DATE" \
             --draft=true
